@@ -42,8 +42,18 @@ class DataStream:
                f"&apiKey={api_key}")
 
         response = requests.get(url)
+        print(response.json())
         data = pd.DataFrame(response.json()["results"])
+        numbers =  data.index.to_list()
+        all_statements = []
 
+        print(pd.DataFrame(data.loc[0]).loc["financials"].loc[0])
+
+        for number in numbers:
+            for statement in pd.DataFrame(data.loc[number]).loc["financials"].keys():
+                all_statements.append(pd.DataFrame(data.loc[number]).loc["financials"].loc[number])
+
+        #all_statements = [[pd.DataFrame(data[number]["financials"][statement]) for statement in pd.DataFrame(data[number]["financials"]).index.to_list()] for number in numbers]
         if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
 
         return data
@@ -94,5 +104,6 @@ class DataStream:
 
         return response.text
 
-print(DataStream(asset_ticker="AAPL", asset_class="Stock").get_fundamentals())
+print(DataStream(asset_ticker="TSLA", asset_class="Stock").get_fundamentals())
+
 
