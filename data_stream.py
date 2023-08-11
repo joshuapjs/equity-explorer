@@ -1,4 +1,5 @@
 import pandas as pd
+from datetime import datetime, timedelta
 import requests
 import json
 import os
@@ -7,11 +8,12 @@ import os
 api_key = os.getenv("API_Polygon")
 
 
-class DataStreamer:
+class DataStream:
 
     api_key = os.getenv("API_Polygon")
 
-    def __init__(self, asset_ticker, asset_class, start, end, frequency="day"):
+    def __init__(self, asset_ticker, asset_class, start=datetime.today(),
+                 end= datetime.today() - timedelta(days=7), frequency="day"):
         self.asset_ticker = asset_ticker
         self.asset_class = asset_class
         self.start = start
@@ -20,10 +22,10 @@ class DataStreamer:
 
     def get_prices(self, show=False):
 
-        asset_classes = {"Stock": self.get_stock_data,
-                         "Option": self.get_options_data,
-                         "Indices": self.get_indices_data,
-                         "Forex": self.get_forex_data
+        asset_classes = {"Stock": self._get_stock_data,
+                         "Option": self._get_options_data,
+                         "Indices": self._get_indices_data,
+                         "Forex": self._get_forex_data
                          }
 
         response = asset_classes[self.asset_class]()
@@ -33,7 +35,21 @@ class DataStreamer:
 
         return data
 
-    def get_stock_data(self):
+
+    def get_fundamentals(self, show=False):
+        url = (f"https://api.polygon.io/vX/reference/financials?ticker="
+               f"{self.asset_ticker}"
+               f"&apiKey={api_key}")
+
+        response = requests.get(url)
+        data = pd.DataFrame(response.json()["results"])
+
+        if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
+
+        return data
+
+
+    def _get_stock_data(self):
         url = (f"https://api.polygon.io/v2/aggs/ticker/{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
@@ -43,7 +59,7 @@ class DataStreamer:
 
         return response.text
 
-    def get_options_data(self):
+    def _get_options_data(self):
         url = (f"https://api.polygon.io/v2/aggs/ticker/O:{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
@@ -53,7 +69,10 @@ class DataStreamer:
 
         return response.text
 
-    def get_indices_data(self):
+    def _get_indices_data(self):
+
+        assert self.asset_class == "Stock"
+
         url = (f"https://api.polygon.io/v2/aggs/ticker/I:{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
@@ -63,7 +82,7 @@ class DataStreamer:
 
         return response.text
 
-    def get_forex_data(self):
+    def _get_forex_data(self):
         url = (f"https://api.polygon.io/v2/aggs/ticker/C:{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
@@ -74,3 +93,6 @@ class DataStreamer:
         response = requests.get(url)
 
         return response.text
+
+print(DataStream(asset_ticker="AAPL", asset_class="Stock").get_fundamentals())
+
