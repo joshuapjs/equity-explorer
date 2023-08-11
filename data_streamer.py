@@ -5,8 +5,6 @@ import os
 
 
 api_key = os.getenv("API_Polygon")
-currency_aggs_url = ("https://api.polygon.io/v2/aggs/ticker/"
-                     "C:pair/range/1/day/start_date/end_date")
 
 
 class DataStreamer:
@@ -64,7 +62,6 @@ class DataStreamer:
         response = requests.get(url)
 
         return response.text
-
 
     def get_forex_data(self):
         url = (f"https://api.polygon.io/v2/aggs/ticker/C:{self.asset_ticker}"
