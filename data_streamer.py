@@ -20,7 +20,8 @@ class DataStreamer:
         self.end = end
         self.frequency = frequency
 
-    def get_prices(self):
+    def get_prices(self, show=False):
+
         asset_classes = {"Stock": self.get_stock_data,
                          "Option": self.get_options_data,
                          "Indices": self.get_indices_data,
@@ -30,6 +31,7 @@ class DataStreamer:
         response = asset_classes[self.asset_class]()
 
         data = pd.DataFrame(json.loads(response)["results"])
+        if show: print(data)
 
         return data
 
