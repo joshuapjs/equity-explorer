@@ -35,7 +35,6 @@ class DataStream:
 
         return data
 
-
     def get_fundamentals(self, show=False):
         url = (f"https://api.polygon.io/vX/reference/financials?ticker="
                f"{self.asset_ticker}"
@@ -45,19 +44,19 @@ class DataStream:
         print(response.json())
         data = pd.DataFrame(response.json()["results"])
         numbers =  data.index.to_list()
-        all_statements = []
-
-        print(pd.DataFrame(data.loc[0]).loc["financials"].loc[0])
+        all_statements = {}
 
         for number in numbers:
-            for statement in pd.DataFrame(data.loc[number]).loc["financials"].keys():
-                all_statements.append(pd.DataFrame(data.loc[number]).loc["financials"].loc[number])
+            for statement in pd.DataFrame(data.loc[number]).loc["financials"].loc[number].keys():
 
-        #all_statements = [[pd.DataFrame(data[number]["financials"][statement]) for statement in pd.DataFrame(data[number]["financials"]).index.to_list()] for number in numbers]
+                filing_date = pd.DataFrame(data.loc[number]).loc["filing_date"].loc[number]
+
+                all_statements[(self.asset_ticker, filing_date, statement)] = (
+                    pd.DataFrame(data.loc[number]).loc["financials"].loc)[number][statement]
+
         if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
 
-        return data
-
+        return all_statements
 
     def _get_stock_data(self):
         url = (f"https://api.polygon.io/v2/aggs/ticker/{self.asset_ticker}"
@@ -103,7 +102,3 @@ class DataStream:
         response = requests.get(url)
 
         return response.text
-
-print(DataStream(asset_ticker="TSLA", asset_class="Stock").get_fundamentals())
-
-
