@@ -41,9 +41,8 @@ class DataStream:
                f"&apiKey={api_key}")
 
         response = requests.get(url)
-        print(response.json())
         data = pd.DataFrame(response.json()["results"])
-        numbers =  data.index.to_list()
+        numbers = data.index.to_list()
         all_statements = {}
 
         for number in numbers:
@@ -51,8 +50,14 @@ class DataStream:
 
                 filing_date = pd.DataFrame(data.loc[number]).loc["filing_date"].loc[number]
 
-                all_statements[(self.asset_ticker, filing_date, statement)] = (
-                    pd.DataFrame(data.loc[number]).loc["financials"].loc)[number][statement]
+                raw_statement = pd.DataFrame(data.loc[number]).loc["financials"].loc[number][statement]
+                statement_df = pd.DataFrame(raw_statement)
+                statement_df = statement_df.transpose()
+                statement_df["order"] = statement_df["order"].astype(int)
+                statement_df = statement_df.set_index("order")
+                statement_df.sort_index(inplace=True)
+
+                all_statements[(self.asset_ticker, filing_date, statement)] = statement_df
 
         if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
 
