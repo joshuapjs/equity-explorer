@@ -12,28 +12,13 @@ class DataStream:
 
     api_key = os.getenv("API_Polygon")
 
-    def __init__(self, asset_ticker, asset_class, start=datetime.today(),
-                 end= datetime.today() - timedelta(days=7), frequency="day"):
+    def __init__(self, asset_ticker, asset_class, start=(datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d'),
+                 end=datetime.today().strftime('%Y-%m-%d'), frequency="day"):
         self.asset_ticker = asset_ticker
         self.asset_class = asset_class
         self.start = start
         self.end = end
         self.frequency = frequency
-
-    def get_prices(self, show=False):
-
-        asset_classes = {"Stock": self._get_stock_data,
-                         "Option": self._get_options_data,
-                         "Indices": self._get_indices_data,
-                         "Forex": self._get_forex_data
-                         }
-
-        response = asset_classes[self.asset_class]()
-
-        data = pd.DataFrame(json.loads(response)["results"])
-        if show: print(data)
-
-        return data
 
     def get_fundamentals(self, show=False):
         url = (f"https://api.polygon.io/vX/reference/financials?ticker="
@@ -62,6 +47,24 @@ class DataStream:
         if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
 
         return all_statements
+
+    def get_prices(self, show=False):
+
+        asset_classes = {"Stock": self._get_stock_data,
+                         "Option": self._get_options_data,
+                         "Indices": self._get_indices_data,
+                         "Forex": self._get_forex_data
+                         }
+
+        response = asset_classes[self.asset_class]()
+
+        data = pd.DataFrame(json.loads(response)["results"])
+        data["t"] = data["t"].apply(lambda x: pd.to_datetime(x, unit="ms"))
+        data = data.set_index("t")
+        data.sort_index(inplace=True)
+        if show: print(data)
+
+        return data
 
     def _get_stock_data(self):
         url = (f"https://api.polygon.io/v2/aggs/ticker/{self.asset_ticker}"
@@ -107,3 +110,6 @@ class DataStream:
         response = requests.get(url)
 
         return response.text
+
+
+print(DataStream("AAPL", "Stock").get_prices())
