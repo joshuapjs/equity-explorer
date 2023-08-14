@@ -1,11 +1,12 @@
 import pandas as pd
 from datetime import datetime, timedelta
+import fundamentals as f
 import requests
 import json
 import os
 
 
-api_key = os.getenv("API_Polygon")
+key = os.getenv("API_Polygon")
 
 
 class DataStream:
@@ -13,53 +14,25 @@ class DataStream:
     This class is used to retrieve data from the Polygon.io API
     """
 
-    api_key = os.getenv("API_Polygon")
-
-    def __init__(self, asset_ticker, asset_class, start=(datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d'),
+    def __init__(self, api_key, asset_ticker, asset_class,
+                 start=(datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d'),
                  end=datetime.today().strftime('%Y-%m-%d'), frequency="day"):
 
+        self.api_key = api_key
         self.asset_ticker = asset_ticker
         self.asset_class = asset_class
         self.start = start
         self.end = end
         self.frequency = frequency
 
-    def get_fundamentals(self, show=False):
-        """
-        This function retrieves the fundamentals of a given asset
-        :param show: (Default value = False) Print the response to the console
-        :return: Dictionary of the following form -> (ticker, filing_date, number) : statement_df
-        """
-        url = (f"https://api.polygon.io/vX/reference/financials?ticker="
-               f"{self.asset_ticker}"
-               f"&apiKey={api_key}")
+    def get_fundamentals(self, show=False, aggregate=True, statement_type="balance_sheet"):
+        fundamentals = f.get_fundamentals(self.api_key,
+                                          ticker=self.asset_ticker,
+                                          show=show,
+                                          aggregate=aggregate,
+                                          statement_type=statement_type)
 
-        response = requests.get(url)
-        data = pd.DataFrame(response.json()["results"])
-        # Get the index of the filings to iterate through them later
-        numbers = data.index.to_list()
-        all_statements = {}
-
-        # Iterate through the filings and the statements in each filing
-        for number in numbers:
-            for statement in pd.DataFrame(data.loc[number]).loc["financials"].loc[number].keys():
-
-                filing_date = pd.DataFrame(data.loc[number]).loc["filing_date"].loc[number]
-
-                # Get the statement and convert it to a DataFrame with the order as the index
-                raw_statement = pd.DataFrame(data.loc[number]).loc["financials"].loc[number][statement]
-                statement_df = pd.DataFrame(raw_statement)
-                statement_df = statement_df.transpose()
-                statement_df["order"] = statement_df["order"].astype(int)
-                statement_df = statement_df.set_index("order")
-                statement_df.sort_index(inplace=True)
-
-                # Add the statement to the dictionary with the key being the tuple (ticker, filing_date, statement)
-                all_statements[(self.asset_ticker, filing_date, statement)] = statement_df
-
-        if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
-
-        return all_statements
+        return fundamentals
 
     def get_prices(self, show=False):
         """
@@ -91,7 +64,7 @@ class DataStream:
         url = (f"https://api.polygon.io/v2/aggs/ticker/{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
-               f"adjusted=true&sort=asc&limit=120&apiKey={api_key}")
+               f"adjusted=true&sort=asc&limit=120&apiKey={self.api_key}")
 
         response = requests.get(url)
 
@@ -101,20 +74,17 @@ class DataStream:
         url = (f"https://api.polygon.io/v2/aggs/ticker/O:{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
-               f"adjusted=true&sort=asc&limit=120&apiKey={api_key}")
+               f"adjusted=true&sort=asc&limit=120&apiKey={self.api_key}")
 
         response = requests.get(url)
 
         return response.text
 
     def _get_indices_data(self):
-
-        assert self.asset_class == "Stock"
-
         url = (f"https://api.polygon.io/v2/aggs/ticker/I:{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
-               f"sort=asc&limit=120&apiKey={api_key}")
+               f"sort=asc&limit=120&apiKey={self.api_key}")
 
         response = requests.get(url)
 
@@ -124,13 +94,8 @@ class DataStream:
         url = (f"https://api.polygon.io/v2/aggs/ticker/C:{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
-               f"adjusted=true&sort=asc&limit=120&apiKey={api_key}")
-
-        print(url)
+               f"adjusted=true&sort=asc&limit=120&apiKey={self.api_key}")
 
         response = requests.get(url)
 
         return response.text
-
-
-# print(DataStream("AAPL", "Stock").get_fundamentals(show=True)) # Get the fundamentals of a stock
