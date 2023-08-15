@@ -1,6 +1,5 @@
 import plotly
 
-
 def get_candles(data, title):
     """
     This function plots the prices of a given asset
@@ -23,7 +22,11 @@ def get_candles(data, title):
     # Add the titles
     fig.update_layout(title=title,
                       yaxis_title="Price",
-                      xaxis_title="Date")
+                      xaxis_title="Date",
+                      paper_bgcolor="black",
+                      plot_bgcolor="#171717",
+                      font=dict(color='#ffffff')
+                      )
 
     # Show the figure
     fig.show()
