@@ -82,3 +82,15 @@ def get_fundamentals(api_key, ticker="AAPL", show=False, aggregate=False, statem
         all_statements.sort_index(axis=1, inplace=True, ascending=False)
 
     return all_statements
+
+
+def get_ticker_info(ticker="AAPL", key="", show=False):
+
+    url = f"https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey={key}"
+
+    response = requests.get(url)
+    shares = response.json()["results"]
+
+    if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
+
+    return shares

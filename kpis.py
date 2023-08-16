@@ -23,6 +23,7 @@ class Stock(Asset):
         if 4 > len(current_years_filings) > 0:
             missing_values = [(4 - int(len(current_years_filings))) * current_years_filings[0]]
             current_years_filings = current_years_filings + missing_values
+
         elif len(current_years_filings) == 0:
             current_years_filings = [date for date in filings_dates
                                      if str(dt.datetime.today() - dt.timedelta(days=100)) in str(date)]
@@ -35,5 +36,20 @@ class Stock(Asset):
         try:
             pe_ratio = price / summed_eps
             return round(pe_ratio, 2)
+        except ZeroDivisionError:
+            return None
+
+    def pbook_ratio(self):
+
+        self.start = (dt.datetime.today() - dt.timedelta(days=2)).strftime("%Y-%m-%d")
+        self.end = (dt.datetime.today() - dt.timedelta(days=1)).strftime("%Y-%m-%d")
+
+        equity = self.get_fundamentals(statement_type="balance_sheet").loc[(1400, "Equity")][0]
+        shares = self.get_stock_infos()["weighted_shares_outstanding"]
+        price = self.get_prices()["c"][-1]
+
+        try:
+            pb_ratio = price / (equity / shares)
+            return round(pb_ratio, 2)
         except ZeroDivisionError:
             return None

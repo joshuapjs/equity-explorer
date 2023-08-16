@@ -30,6 +30,13 @@ class Asset:
 
         return fundamentals
 
+    def get_stock_infos(self, show=False):
+        infos = f.get_ticker_info(key=self.api_key,
+                                  ticker=self.asset_ticker,
+                                  show=show)
+
+        return infos
+
     def get_prices(self, show=False):
         """
         This function retrieves the prices of a given asset
