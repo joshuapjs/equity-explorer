@@ -1,5 +1,16 @@
 import plotly
+import os
 
+
+def pretty_plot(func):
+    def set_parameters(*args, **kwargs):
+        plotly.io.templates.default = "plotly_dark"
+        func(*args, **kwargs)
+
+    return set_parameters
+
+
+@pretty_plot
 def get_candles(data, title):
     """
     This function plots the prices of a given asset
@@ -23,9 +34,35 @@ def get_candles(data, title):
     fig.update_layout(title=title,
                       yaxis_title="Price",
                       xaxis_title="Date",
-                      paper_bgcolor="black",
-                      plot_bgcolor="#171717",
-                      font=dict(color='#ffffff')
+                      )
+
+    # Show the figure
+    fig.show()
+
+    return fig
+
+
+@pretty_plot
+def get_line(data, title):
+    """
+    This function plots the prices of a given asset
+    :param data: DataFrame of prices
+    :param title: Title of the plot
+    :return:
+    """
+
+    # Create the plotly figure
+    fig = plotly.graph_objects.Figure()
+
+    # Add the candlestick trace
+    fig.add_trace(plotly.graph_objects.Scatter(x=data.index,
+                                               y=data["c"],
+                                               name="Price"))
+
+    # Add the titles
+    fig.update_layout(title=title,
+                      yaxis_title="Price",
+                      xaxis_title="Date",
                       )
 
     # Show the figure

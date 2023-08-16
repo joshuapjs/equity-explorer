@@ -4,4 +4,4 @@ import os
 
 key = os.getenv("API_Polygon")
 
-viz.get_candles(ds.DataStream(key, "AAPL", "Stock", start="2022-01-01", end="2022-12-31").get_prices(), "AAPL Prices")
+viz.get_line(ds.DataStream(key, "AAPL", "Stock", start="2023-08-01", end="2023-08-16").get_prices(), "AAPL Prices")
