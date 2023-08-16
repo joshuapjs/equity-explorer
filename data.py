@@ -3,13 +3,9 @@ from datetime import datetime, timedelta
 import fundamentals as f
 import requests
 import json
-import os
 
 
-key = os.getenv("API_Polygon")
-
-
-class DataStream:
+class Asset:
     """
     This class is used to retrieve data from the Polygon.io API
     """
