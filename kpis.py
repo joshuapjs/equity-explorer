@@ -42,7 +42,7 @@ class Stock(Asset):
         except ZeroDivisionError:
             return None
 
-    def pbook_ratio(self):
+    def pb_ratio(self):
 
         self.start = (dt.datetime.today() - dt.timedelta(days=2)).strftime("%Y-%m-%d")
         self.end = (dt.datetime.today() - dt.timedelta(days=1)).strftime("%Y-%m-%d")
@@ -68,7 +68,7 @@ class Stock(Asset):
         except ZeroDivisionError:
             return None
 
-    def roe(self):
+    def ro_equity(self):
 
         equity = self.get_fundamentals(statement_type="balance_sheet").loc[(1400, "Equity")][0]
         income = self.get_fundamentals(statement_type="income_statement").loc[(3200, "Net Income/Loss")][0]
@@ -76,5 +76,16 @@ class Stock(Asset):
         try:
             roe = income / equity
             return round(roe, 2)
+        except ZeroDivisionError:
+            return None
+
+    def ro_assets(self):
+
+        assets = self.get_fundamentals(statement_type="balance_sheet").loc[(100, "Assets")][0]
+        income = self.get_fundamentals(statement_type="income_statement").loc[(3200, "Net Income/Loss")][0]
+
+        try:
+            roa = income / assets
+            return round(roa, 2)
         except ZeroDivisionError:
             return None
