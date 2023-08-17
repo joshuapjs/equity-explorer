@@ -1,5 +1,4 @@
 import plotly
-import os
 
 
 def pretty_plot(func):
