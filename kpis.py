@@ -67,3 +67,14 @@ class Stock(Asset):
             return round(pb_ratio, 2)
         except ZeroDivisionError:
             return None
+
+    def roe(self):
+
+        equity = self.get_fundamentals(statement_type="balance_sheet").loc[(1400, "Equity")][0]
+        income = self.get_fundamentals(statement_type="income_statement").loc[(3200, "Net Income/Loss")][0]
+
+        try:
+            roe = income / equity
+            return round(roe, 2)
+        except ZeroDivisionError:
+            return None
