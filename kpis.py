@@ -1,5 +1,8 @@
 from data import Asset
 import datetime as dt
+import os
+
+key = os.environ.get("API_Polygon")
 
 
 class Stock(Asset):
@@ -50,6 +53,17 @@ class Stock(Asset):
 
         try:
             pb_ratio = price / (equity / shares)
+            return round(pb_ratio, 2)
+        except ZeroDivisionError:
+            return None
+
+    def current_ratio(self):
+
+        assets = self.get_fundamentals(statement_type="balance_sheet").loc[(100, "Assets")][0]
+        liabilities = self.get_fundamentals(statement_type="balance_sheet").loc[(600, "Liabilities")][0]
+
+        try:
+            pb_ratio = assets / liabilities
             return round(pb_ratio, 2)
         except ZeroDivisionError:
             return None
