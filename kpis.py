@@ -7,7 +7,7 @@ class Stock(Asset):
     def __init__(self, api_key, asset_ticker, asset_class):
         super().__init__(api_key, asset_ticker, asset_class)
 
-    def pe_ratio(self):
+    def ep_ratio(self):
         """
         This function calculates the PE ratio of a stock
         :return:
@@ -34,7 +34,7 @@ class Stock(Asset):
         price = self.get_prices()["c"][-1]
 
         try:
-            pe_ratio = price / summed_eps
+            pe_ratio = summed_eps / price
             return round(pe_ratio, 2)
         except ZeroDivisionError:
             return None
