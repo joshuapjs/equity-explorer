@@ -2,7 +2,6 @@ from data import Asset
 from fundamentals import get_dividends
 from scipy.stats import gmean
 import datetime as dt
-import math
 import os
 
 key = os.environ.get("API_Polygon")
@@ -97,7 +96,6 @@ class Stock(Asset):
 
         dividends = get_dividends(api_key=self.api_key, ticker=self.asset_ticker)
         dividends_growth = dividends["cash_amount"][::-1].pct_change(periods=1).dropna()
-        count = dividends_growth.count()
         average_dividends = gmean([rate + 1 for rate in dividends_growth.to_list()]) - 1
 
         return average_dividends
