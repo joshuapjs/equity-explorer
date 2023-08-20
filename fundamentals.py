@@ -84,9 +84,9 @@ def get_fundamentals(api_key, ticker="AAPL", show=False, aggregate=False, statem
     return all_statements
 
 
-def get_ticker_info(ticker="AAPL", key="", show=False):
+def get_ticker_info(api_key, ticker="AAPL", show=False):
 
-    url = f"https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey={key}"
+    url = f"https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey={api_key}"
 
     response = requests.get(url)
     shares = response.json()["results"]
@@ -94,3 +94,16 @@ def get_ticker_info(ticker="AAPL", key="", show=False):
     if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
 
     return shares
+
+
+def get_dividends(api_key, ticker="AAPL", show=False):
+
+    url = f"https://api.polygon.io/v3/reference/dividends?ticker={ticker}&apiKey={api_key}"
+
+    response = requests.get(url)
+    dividends_df = pd.DataFrame(response.json()["results"])
+
+    if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
+
+    return dividends_df
+

@@ -31,7 +31,7 @@ class Asset:
         return fundamentals
 
     def get_stock_infos(self, show=False):
-        infos = f.get_ticker_info(key=self.api_key,
+        infos = f.get_ticker_info(api_key=self.api_key,
                                   ticker=self.asset_ticker,
                                   show=show)
 
