@@ -3,6 +3,28 @@ import requests
 import json
 
 
+def handle_response(response, ticker, client_error_message, show=False):
+    """
+    This function handles the response from the API
+    :param response: The response from the API
+    :param ticker: The ticker of the asset
+    :param client_error_message: The message to display if the client made an error
+    :return: The response in JSON format
+    """
+
+    data = None
+
+    if str(response.status_code)[0] == "4" or response.json()["results"] == []:
+        raise Exception(f"{client_error_message} for {ticker}")
+    elif str(response.status_code)[0] == "2":
+        data = response.json()["results"]
+        if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
+    elif str(response.status_code)[0] == "5":
+        raise Exception("Internal server error, please try again later")
+
+    return data
+
+
 def get_fundamentals(api_key, ticker="AAPL", show=False, aggregate=False, statement_type="balance_sheet"):
     """
     This function retrieves the fundamentals of a given asset
@@ -18,7 +40,10 @@ def get_fundamentals(api_key, ticker="AAPL", show=False, aggregate=False, statem
            f"&apiKey={api_key}")
 
     response = requests.get(url)
-    data = pd.DataFrame(response.json()["results"])
+
+    data = handle_response(response, ticker, "No fundamentals found", show=show)
+    data = pd.DataFrame(data)
+
     # Get the index of the filings to iterate through them later
     numbers = data.index.to_list()
     all_statements = {}
@@ -39,8 +64,6 @@ def get_fundamentals(api_key, ticker="AAPL", show=False, aggregate=False, statem
 
             # Add the statement to the dictionary with the key being the tuple (ticker, filing_date, statement)
             all_statements[(ticker, filing_date, statement)] = statement_df
-
-    if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
 
     # Aggregate the statements by statement type
     if aggregate:
@@ -87,23 +110,19 @@ def get_fundamentals(api_key, ticker="AAPL", show=False, aggregate=False, statem
 def get_ticker_info(api_key, ticker="AAPL", show=False):
 
     url = f"https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey={api_key}"
-
     response = requests.get(url)
-    shares = response.json()["results"]
 
-    if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
+    info = handle_response(response, ticker, "No information found", show=show)
 
-    return shares
+    return info
 
 
 def get_dividends(api_key, ticker="AAPL", show=False):
 
     url = f"https://api.polygon.io/v3/reference/dividends?ticker={ticker}&apiKey={api_key}"
-
     response = requests.get(url)
-    dividends_df = pd.DataFrame(response.json()["results"])
 
-    if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
+    data = handle_response(response, ticker, "No dividends found", show=show)
+    dividends_df = pd.DataFrame(data)
 
     return dividends_df
-

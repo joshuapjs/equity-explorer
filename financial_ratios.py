@@ -2,9 +2,6 @@ from data import Asset
 from fundamentals import get_dividends
 from scipy.stats import gmean
 import datetime as dt
-import os
-
-key = os.environ.get("API_Polygon")
 
 
 class Stock(Asset):
