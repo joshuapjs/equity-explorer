@@ -68,3 +68,32 @@ def get_line(data, title):
     fig.show()
 
     return fig
+
+
+@pretty_plot
+def get_histogram(data, title):
+    """
+    This function plots the prices of a given asset
+    :param data: DataFrame of prices
+    :param title: Title of the plot
+    :return:
+    """
+
+    # Create the plotly figure
+    fig = plotly.graph_objects.Figure()
+
+    # Add the candlestick trace
+    fig.add_trace(plotly.graph_objects.Histogram(x=data["c"],
+                                               y=data["c"],
+                                               name="Price"))
+
+    # Add the titles
+    fig.update_layout(title=title,
+                      yaxis_title="Count",
+                      xaxis_title="Price",
+                      )
+
+    # Show the figure
+    fig.show()
+
+    return fig
