@@ -6,7 +6,7 @@ import datetime as dt
 
 class Stock(Asset):
 
-    def __init__(self, api_key, asset_ticker, asset_class):
+    def __init__(self, api_key, asset_ticker, asset_class="Stock"):
         super().__init__(api_key, asset_ticker, asset_class)
 
     def ep_ratio(self):
