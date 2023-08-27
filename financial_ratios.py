@@ -14,7 +14,7 @@ class Stock(Asset):
         This function calculates the PE ratio of a stock
         :return:
         """
-        self.start = (dt.datetime.today() - dt.timedelta(days=1)).strftime("%Y-%m-%d")
+        self.start = (dt.datetime.today() - dt.timedelta(days=4)).strftime("%Y-%m-%d")
         self.end = dt.datetime.today().strftime("%Y-%m-%d")
 
         fundamentals = self.get_fundamentals(statement_type="income_statement")
@@ -43,7 +43,7 @@ class Stock(Asset):
 
     def pb_ratio(self):
 
-        self.start = (dt.datetime.today() - dt.timedelta(days=2)).strftime("%Y-%m-%d")
+        self.start = (dt.datetime.today() - dt.timedelta(days=5)).strftime("%Y-%m-%d")
         self.end = (dt.datetime.today() - dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
         equity = self.get_fundamentals(statement_type="balance_sheet").loc[(1400, "Equity")][0]

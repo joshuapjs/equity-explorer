@@ -9,9 +9,19 @@ app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div([
     html.Div(children="Portfolio Stack"),
     html.Hr(),
-    dcc.RadioItems(options=['AAPL', 'TSLA', 'AMZN'], value='AAPL', id='ticker_as_text'),
+    dcc.RadioItems(options=[
+        {'label': 'AAPL', 'value': 'AAPL'},
+        {'label': 'TSLA', 'value': 'TSLA'},
+        {'label': 'AMZN', 'value': 'AMZN'}
+    ], value="AAPL", id='ticker_as_text'),
     dash_table.DataTable(data=[],
-                         columns=[],
+                         columns=[{"name": i, "id": i} for i in [
+                            "E/P Ratio",
+                            "P/B Ratio",
+                            "Current Ratio",
+                            "ROE",
+                            "ROA",
+                            "Average Dividend growth"]],
                          page_size=6,
                          id="ratio_table"),
 ])
@@ -21,7 +31,7 @@ app.layout = html.Div([
           Input("ticker_as_text", "value"))
 def update_table(ticker):
 
-    stock = fr.Stock(key, "AAPL", "Stock")
+    stock = fr.Stock(key, ticker, "Stock")
 
     data = [{"E/P Ratio": stock.ep_ratio(),
              "P/B Ratio": stock.pb_ratio(),
@@ -30,15 +40,9 @@ def update_table(ticker):
              "ROA": stock.ro_assets(),
              "Average Dividend growth": stock.div_growth()}]
 
-    columns = [{"name": i, "id": i} for i in [
-        "E/P Ratio",
-        "P/B Ratio",
-        "Current Ratio",
-        "ROE",
-        "ROA",
-        "Average Dividend growth"]]
+    print(data)
 
-    return data, columns
+    return data
 
 
 if __name__ == "__main__":
