@@ -5,25 +5,38 @@ import pandas as pd
 import os
 
 key = os.getenv("API_Polygon")
-app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
 
 app.layout = html.Div([
-    html.Div(children="Portfolio Stack"),
+    html.Div(children="Portfolio Stack",
+             style={"fontSize": "24px"}),
     html.Hr(),
     dcc.Input(id="ticker_as_text".format("search"),
               value="AAPL".format("search")),
-    html.Button('Submit', id='search_button'),
+    dbc.Button('Submit', id='search_button', color="dark"),
     dash_table.DataTable(data=[],
-                         columns=[{"name": i, "id": i} for i in [
-                            "E/P Ratio",
-                            "P/B Ratio",
-                            "Current Ratio",
-                            "ROE",
-                            "ROA",
-                            "Average Dividend growth"]],
-                         page_size=6,
-                         id="ratio_table"),
-])
+     columns=[{"name": i, "id": i} for i in [
+        "E/P Ratio",
+        "P/B Ratio",
+        "Current Ratio",
+        "ROE",
+        "ROA",
+        "Average Dividend growth"]],
+     page_size=6,
+     id="ratio_table",
+     style_as_list_view=True,
+     style_table={
+        'overflowX': 'auto',
+        'border': '1px solid white'},
+     style_header={
+        'backgroundColor': 'rgb(30, 30, 30)',
+        'fontWeight': 'bold',
+        'color': 'white',
+        'border': '1px solid grey'},
+     style_cell={
+        'backgroundColor': 'rgb(50, 50, 50)',
+        'color': 'white',
+        'border': '1px solid grey'})])
 
 
 @callback(Output("ratio_table", "data"),
