@@ -11,8 +11,8 @@ class Asset:
     """
 
     def __init__(self, api_key, asset_ticker, asset_class,
-                 start=(datetime.today() - timedelta(days=90)).strftime('%Y-%m-%d'),
-                 end=datetime.today().strftime('%Y-%m-%d'), frequency="day"):
+                 start=(datetime.today() - timedelta(days=360)).strftime('%Y-%m-%d'),
+                 end=datetime.today().strftime('%Y-%m-%d'), frequency="day", limit=1000):
 
         self.api_key = api_key
         self.asset_ticker = asset_ticker
@@ -20,6 +20,7 @@ class Asset:
         self.start = start
         self.end = end
         self.frequency = frequency
+        self.limit = limit
 
     def get_fundamentals(self, show=False, aggregate=True, statement_type="balance_sheet"):
         fundamentals = f.get_fundamentals(self.api_key,
@@ -67,7 +68,7 @@ class Asset:
         url = (f"https://api.polygon.io/v2/aggs/ticker/{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
-               f"adjusted=true&sort=asc&limit=120&apiKey={self.api_key}")
+               f"adjusted=true&sort=asc&limit={self.limit}&apiKey={self.api_key}")
 
         response = requests.get(url)
 
@@ -77,7 +78,7 @@ class Asset:
         url = (f"https://api.polygon.io/v2/aggs/ticker/O:{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
-               f"adjusted=true&sort=asc&limit=120&apiKey={self.api_key}")
+               f"adjusted=true&sort=asc&limit={self.limit}&apiKey={self.api_key}")
 
         response = requests.get(url)
 
@@ -87,7 +88,7 @@ class Asset:
         url = (f"https://api.polygon.io/v2/aggs/ticker/I:{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
-               f"sort=asc&limit=120&apiKey={self.api_key}")
+               f"sort=asc&limit={self.limit}&apiKey={self.api_key}")
 
         response = requests.get(url)
 
@@ -97,7 +98,7 @@ class Asset:
         url = (f"https://api.polygon.io/v2/aggs/ticker/C:{self.asset_ticker}"
                f"/range/1/{self.frequency}"
                f"/{self.start}/{self.end}?"
-               f"adjusted=true&sort=asc&limit=120&apiKey={self.api_key}")
+               f"adjusted=true&sort=asc&limit={self.limit}&apiKey={self.api_key}")
 
         response = requests.get(url)
 

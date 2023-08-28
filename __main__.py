@@ -46,7 +46,8 @@ app.layout = html.Div([
                                  'backgroundColor': 'rgb(50, 50, 50)',
                                  'color': 'white',
                                  'fontFamily': 'Arial',
-                                 'fontSize': 14})
+                                 'fontSize': 14}),
+        html.Div(style={'height': '20px'}),
     ])])])
 
 
