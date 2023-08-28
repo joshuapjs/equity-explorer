@@ -4,7 +4,7 @@ import plotly
 def pretty_plot(func):
     def set_parameters(*args, **kwargs):
         plotly.io.templates.default = "plotly_dark"
-        func(*args, **kwargs)
+        return func(*args, **kwargs)
 
     return set_parameters
 
@@ -17,7 +17,7 @@ def get_candles(data, title):
     :param title: Title of the plot
     :return:
     """
-
+    print("function called")
     # Create the plotly figure
     fig = plotly.graph_objects.Figure()
 
@@ -34,9 +34,6 @@ def get_candles(data, title):
                       yaxis_title="Price",
                       xaxis_title="Date",
                       )
-
-    # Show the figure
-    fig.show()
 
     return fig
 
@@ -64,9 +61,6 @@ def get_line(data, title):
                       xaxis_title="Date",
                       )
 
-    # Show the figure
-    fig.show()
-
     return fig
 
 
@@ -92,8 +86,5 @@ def get_histogram(data, title):
                       yaxis_title="Count",
                       xaxis_title="Price",
                       )
-
-    # Show the figure
-    fig.show()
 
     return fig
