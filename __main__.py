@@ -1,7 +1,7 @@
 from dash import Dash, dcc, html, dash_table, callback, Output, Input, State
 import financial_ratios as fr
 import dash_bootstrap_components as dbc
-from visualizing import get_candles
+import visualizing as viz
 import pandas as pd
 import os
 
@@ -15,7 +15,14 @@ app.layout = html.Div([
     dcc.Input(id="ticker_as_text".format("search"),
               value="AAPL".format("search")),
     dbc.Button('Submit', id='search_button', color="dark"),
-    dash_table.DataTable(data=[],
+    dcc.Graph(figure={}, id="price_line"),
+    dcc.Graph(figure={}, id="price_hist"),
+    dash_table.DataTable(data=[{"E/P Ratio": "calculating.",
+                                "P/B Ratio": "calculating.",
+                                "Current Ratio": "calculating.",
+                                "ROE": "calculating.",
+                                "ROA": "calculating.",
+                                "Average Dividend growth": "calculating."}],
                          columns=[{"name": i, "id": i} for i in [
                              "E/P Ratio",
                              "P/B Ratio",
@@ -31,14 +38,14 @@ app.layout = html.Div([
                              'border': '1px solid white'},
                          style_header={
                              'backgroundColor': 'rgb(30, 30, 30)',
-                             'fontWeight': 'bold',
                              'color': 'white',
                              'border': '1px solid grey'},
                          style_cell={
                              'backgroundColor': 'rgb(50, 50, 50)',
                              'color': 'white',
-                             'border': '1px solid grey'}),
-    dcc.Graph(figure={}, id="price_candles")])
+                             'fontFamily': 'Arial',
+                             'fontSize': 14,
+                             'border': '1px solid grey'})])
 
 
 @callback(Output("ratio_table", "data"),
@@ -64,12 +71,22 @@ def update_table(n_clicks, ticker):
     return data
 
 
-@callback(Output("price_candles", "figure"),
+@callback(Output("price_line", "figure"),
           Input("search_button", "n_clicks"),
           State("ticker_as_text", "value"))
 def update_graph(n_clicks, ticker):
     data = fr.Stock(key, ticker, "Stock").get_prices()
-    fig = get_candles(data, str(ticker))
+    fig = viz.get_line(data, str(ticker))
+
+    return fig
+
+
+@callback(Output("price_hist", "figure"),
+          Input("search_button", "n_clicks"),
+          State("ticker_as_text", "value"))
+def update_hist(n_clicks, ticker):
+    data = fr.Stock(key, ticker, "Stock").get_prices().pct_change(periods=1).dropna()
+    fig = viz.get_histogram(data, str(ticker))
 
     return fig
 

@@ -17,7 +17,7 @@ def get_candles(data, title):
     :param title: Title of the plot
     :return:
     """
-    print("function called")
+
     # Create the plotly figure
     fig = plotly.graph_objects.Figure()
 
