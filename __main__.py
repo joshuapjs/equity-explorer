@@ -85,6 +85,7 @@ def update_graph(n_clicks, ticker):
             .cumsum())
 
     fig = viz.get_line(data, str(ticker))
+    fig = fig.update_layout(yaxis_title="Returns")
 
     return fig
 
