@@ -53,7 +53,7 @@ def get_line(data, title):
     # Add the candlestick trace
     fig.add_trace(plotly.graph_objects.Scatter(x=data.index,
                                                y=data["c"],
-                                               name="Price"))
+                                               name=title))
 
     # Add the titles
     fig.update_layout(title=title,
@@ -78,13 +78,14 @@ def get_histogram(data, title):
 
     # Add the candlestick trace
     fig.add_trace(plotly.graph_objects.Histogram(x=data["c"],
-                                               y=data["c"],
-                                               name="Price"))
+                                                 y=data["c"],
+                                                 name=title,
+                                                 opacity=0.7))
 
     # Add the titles
     fig.update_layout(title=title,
                       yaxis_title="Count",
-                      xaxis_title="Price",
+                      xaxis_title="Returns",
                       )
 
     return fig

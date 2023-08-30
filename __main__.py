@@ -3,30 +3,41 @@ import financial_ratios as fr
 import dash_bootstrap_components as dbc
 import visualizing as viz
 import pandas as pd
+import plotly
 import os
 
 key = os.getenv("API_Polygon")
-app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
+app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 
 app.layout = html.Div([
     html.Div(children="Portfolio Stack",
-             style={"fontSize": "24px"}),
+             style={"fontSize": "24px",
+                    'color': 'white',
+                    'fontFamily': 'Arial',
+                    }),
+
     html.Div(style={'height': '20px'}),
     dcc.Input(id="ticker_as_text".format("search"),
               value="AAPL".format("search")),
-    dbc.Button('Submit', id='search_button', color="dark"),
+    dbc.Button('Submit', id='search_button', color='#101010', style={'backgroundColor': '#101010',
+                                                                     'color': 'white',
+                                                                     'fontFamily': 'Arial',
+                                                                     'border': '1px solid #636efa'
+                                                                     }),
     html.Div(style={'height': '20px'}),
     dbc.Container([dbc.Row([
         dbc.Col(dcc.Graph(figure={}, id="price_line")),
         dbc.Col(dcc.Graph(figure={}, id="price_hist")),
         html.Div(style={'height': '20px'}),
-        dash_table.DataTable(data=[{"E/P Ratio": "calculating.",
+        dash_table.DataTable(data=[{"Ticker": "AAPL",
+                                    "E/P Ratio": "calculating.",
                                     "P/B Ratio": "calculating.",
                                     "Current Ratio": "calculating.",
                                     "ROE": "calculating.",
                                     "ROA": "calculating.",
                                     "Average Dividend growth": "calculating."}],
                              columns=[{"name": i, "id": i} for i in [
+                                 "Ticker",
                                  "E/P Ratio",
                                  "P/B Ratio",
                                  "Current Ratio",
@@ -38,15 +49,23 @@ app.layout = html.Div([
                              style_as_list_view=True,
                              style_table={
                                  'overflowX': 'auto',
-                                 'border': 'black'},
+                                 'border': '1px solid #636efa'
+                             },
                              style_header={
-                                 'backgroundColor': 'rgb(30, 30, 30)',
-                                 'color': 'white'},
+                                 'backgroundColor': '#101010',
+                                 'color': 'white',
+                                 'fontWeight': 'bold',
+                                 'borderBottom': '1px solid #636efa',
+                                 'padding': '5px'
+                             },
                              style_cell={
-                                 'backgroundColor': 'rgb(50, 50, 50)',
+                                 'backgroundColor': '#101010',
                                  'color': 'white',
                                  'fontFamily': 'Arial',
-                                 'fontSize': 14}),
+                                 'fontSize': 14,
+                                 'border': '1px solid #636efa',
+                                 'padding': '5px'
+                             }),
         html.Div(style={'height': '20px'}),
     ])])])
 
@@ -55,8 +74,7 @@ app.layout = html.Div([
           Input("search_button", "n_clicks"),
           State("ticker_as_text", "value"))
 def update_table(n_clicks, ticker):
-
-    stock = fr.Stock(key, ticker, "Stock")
+    data = []
 
     def fetch_value(object_method, default_value):
         try:
@@ -65,12 +83,30 @@ def update_table(n_clicks, ticker):
             print(e)
             return default_value
 
-    data = [{"E/P Ratio": fetch_value(stock.ep_ratio, pd.NA),
-             "P/B Ratio": fetch_value(stock.pb_ratio, pd.NA),
-             "Current Ratio": fetch_value(stock.current_ratio, pd.NA),
-             "ROE": fetch_value(stock.ro_equity, pd.NA),
-             "ROA": fetch_value(stock.ro_assets, pd.NA),
-             "Average Dividend growth": fetch_value(stock.div_growth, pd.NA)}]
+    def add_line(ticker_symbol):
+
+        stock = fr.Stock(key, ticker_symbol, "Stock")
+
+        line_of_data = {"Ticker": ticker_symbol,
+                        "E/P Ratio": fetch_value(stock.ep_ratio, pd.NA),
+                        "P/B Ratio": fetch_value(stock.pb_ratio, pd.NA),
+                        "Current Ratio": fetch_value(stock.current_ratio, pd.NA),
+                        "ROE": fetch_value(stock.ro_equity, pd.NA),
+                        "ROA": fetch_value(stock.ro_assets, pd.NA),
+                        "Average Dividend growth": fetch_value(stock.div_growth, pd.NA)}
+
+        data.append(line_of_data)
+
+    if "," in ticker:
+        ticker_list = ticker.strip().split(",")
+
+        add_line(ticker_list[0])
+        ticker_list.remove(ticker_list[0])
+
+        for ticker in ticker_list:
+            add_line(ticker)
+    else:
+        add_line(ticker)
 
     return data
 
@@ -79,13 +115,37 @@ def update_table(n_clicks, ticker):
           Input("search_button", "n_clicks"),
           State("ticker_as_text", "value"))
 def update_graph(n_clicks, ticker):
+    def add_graph_line(ticker_symbol, data, figure):
+        figure.add_trace(plotly.graph_objects.Scatter(x=data.index,
+                                                      y=data["c"],
+                                                      name=ticker_symbol))
 
-    data = (fr.Stock(key, ticker, "Stock").get_prices()
-            .pct_change(periods=1)
-            .dropna()
-            .cumsum())
+    if "," in ticker:
+        symbol_list = ticker.strip().split(",")
+        first_graph_line = (fr.Stock(key, symbol_list[0], "Stock").get_prices()
+                            .pct_change(periods=1)
+                            .dropna()
+                            .cumsum())
+        fig = viz.get_line(first_graph_line, symbol_list[0])
+        symbol_list.remove(symbol_list[0])
 
-    fig = viz.get_line(data, str(ticker))
+        for symbol in symbol_list:
+            data = (fr.Stock(key, symbol, "Stock").get_prices()
+                    .pct_change(periods=1)
+                    .dropna())
+
+            data["c"] = (1 + data["c"]).cumprod() - 1
+            add_graph_line(symbol, data, fig)
+
+        fig.update_layout(title="Returns")
+    else:
+        data = (fr.Stock(key, ticker, "Stock").get_prices()
+                .pct_change(periods=1)
+                .dropna()
+                .cumsum())
+
+        fig = viz.get_line(data, ticker)
+
     fig = fig.update_layout(yaxis_title="Returns")
 
     return fig
@@ -95,12 +155,35 @@ def update_graph(n_clicks, ticker):
           Input("search_button", "n_clicks"),
           State("ticker_as_text", "value"))
 def update_hist(n_clicks, ticker):
+    def add_hist_trace(ticker_symbol, data, figure):
+        figure.add_trace(plotly.graph_objects.Histogram(x=data["c"],
+                                                        y=data["c"],
+                                                        name=ticker_symbol,
+                                                        opacity=0.7))
 
-    data = (fr.Stock(key, ticker, "Stock").get_prices()
-            .pct_change(periods=1)
-            .dropna())
+    if "," in ticker:
+        symbol_list = ticker.strip().split(",")
+        first_hist_data = (fr.Stock(key, symbol_list[0], "Stock").get_prices()
+                           .pct_change(periods=1)
+                           .dropna())
+        fig = viz.get_histogram(first_hist_data, symbol_list[0])
+        symbol_list.remove(symbol_list[0])
 
-    fig = viz.get_histogram(data, str(ticker))
+        for symbol in symbol_list:
+            data = (fr.Stock(key, symbol, "Stock").get_prices()
+                    .pct_change(periods=1)
+                    .dropna())
+
+            add_hist_trace(symbol, data, fig)
+
+        fig.update_layout(title="Distribution")
+
+    else:
+        data = (fr.Stock(key, ticker, "Stock").get_prices()
+                .pct_change(periods=1)
+                .dropna())
+
+        fig = viz.get_histogram(data, ticker)
 
     return fig
 
