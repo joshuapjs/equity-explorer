@@ -1,5 +1,20 @@
-import pandas
 import statsmodels.api as sm
+from price_data import Asset
 
 
-def get_capm(api_key, ):
+def get_capm(api_key, asset_ticker):
+
+    asset = Asset(api_key, asset_ticker, "Stock")
+    asset_prices = asset.get_prices()["c"]
+    asset_returns = asset_prices.pct_change(periods=1).dropna()
+
+    spy = Asset(api_key, "SPX", "Indices")
+    spy_prices = spy.get_prices()["c"]
+    spy_returns = spy_prices.pct_change(periods=1).dropna()
+
+    print(len(spy_prices), len(asset_prices))
+
+    spy_returns = sm.add_constant(spy_returns)
+    model = sm.OLS(asset_returns, spy_returns).fit()
+
+    return model.summary()
