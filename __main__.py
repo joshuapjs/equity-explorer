@@ -1,7 +1,7 @@
 from dash import Dash, dcc, html, dash_table, callback, Output, Input, State
-import financial_ratios as fr
+import fundamental_ratios as fr
 import dash_bootstrap_components as dbc
-import visualizing as viz
+import visualize as viz
 import pandas as pd
 import plotly
 import os

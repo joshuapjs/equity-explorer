@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
-import fundamentals as f
+import fundamental_data as f
 import requests
 import json
 
@@ -24,7 +24,7 @@ class Asset:
 
     def get_fundamentals(self, show=False, aggregate=True, statement_type="balance_sheet"):
         fundamentals = f.get_fundamentals(self.api_key,
-                                          ticker=self.asset_ticker,
+                                          asset_ticker=self.asset_ticker,
                                           show=show,
                                           aggregate=aggregate,
                                           statement_type=statement_type)
@@ -33,7 +33,7 @@ class Asset:
 
     def get_stock_infos(self, show=False):
         infos = f.get_ticker_info(api_key=self.api_key,
-                                  ticker=self.asset_ticker,
+                                  asset_ticker=self.asset_ticker,
                                   show=show)
 
         return infos

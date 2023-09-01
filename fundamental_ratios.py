@@ -1,5 +1,5 @@
-from data import Asset
-from fundamentals import get_dividends
+from price_data import Asset
+from fundamental_data import get_dividends
 from scipy.stats import gmean
 import datetime as dt
 

@@ -3,11 +3,11 @@ import requests
 import json
 
 
-def handle_response(response, ticker, client_error_message, show=False):
+def handle_response(response, asset_ticker, client_error_message, show=False):
     """
     This function handles the response from the API
     :param response: The response from the API
-    :param ticker: The ticker of the asset
+    :param asset_ticker: The ticker of the asset
     :param client_error_message: The message to display if the client made an error
     :return: The response in JSON format
     """
@@ -15,7 +15,7 @@ def handle_response(response, ticker, client_error_message, show=False):
     data = None
 
     if str(response.status_code)[0] == "4" or response.json()["results"] == []:
-        raise Exception(f"{client_error_message} for {ticker}")
+        raise Exception(f"{client_error_message} for {asset_ticker}")
     elif str(response.status_code)[0] == "2":
         data = response.json()["results"]
         if show: print(json.dumps(response.json(), sort_keys=True, indent=4))
@@ -25,23 +25,23 @@ def handle_response(response, ticker, client_error_message, show=False):
     return data
 
 
-def get_fundamentals(api_key, ticker="AAPL", show=False, aggregate=False, statement_type="balance_sheet"):
+def get_fundamentals(api_key, asset_ticker="AAPL", show=False, aggregate=False, statement_type="balance_sheet"):
     """
     This function retrieves the fundamentals of a given asset
     :param api_key: The API key for Polygon.io
-    :param ticker: (Default value = "AAPL") The ticker of the asset
+    :param asset_ticker: (Default value = "AAPL") The ticker of the asset
     :param show: (Default value = False) Print the response to the console
     :param aggregate: (Default value = False) Aggregate the statements by statement type
     :param statement_type: (Default value = "balance_sheet") The type of statement to aggregate
     :return: Dictionary of the following form -> (ticker, filing_date, number) : statement_df
     """
     url = (f"https://api.polygon.io/vX/reference/financials?ticker="
-           f"{ticker}"
+           f"{asset_ticker}"
            f"&apiKey={api_key}")
 
     response = requests.get(url)
 
-    data = handle_response(response, ticker, "No fundamentals found", show=show)
+    data = handle_response(response, asset_ticker, "No fundamentals found", show=show)
     data = pd.DataFrame(data)
 
     # Get the index of the filings to iterate through them later
@@ -63,7 +63,7 @@ def get_fundamentals(api_key, ticker="AAPL", show=False, aggregate=False, statem
             statement_df.sort_index(inplace=True)
 
             # Add the statement to the dictionary with the key being the tuple (ticker, filing_date, statement)
-            all_statements[(ticker, filing_date, statement)] = statement_df
+            all_statements[(asset_ticker, filing_date, statement)] = statement_df
 
     # Aggregate the statements by statement type
     if aggregate:
@@ -107,12 +107,12 @@ def get_fundamentals(api_key, ticker="AAPL", show=False, aggregate=False, statem
     return all_statements
 
 
-def get_ticker_info(api_key, ticker="AAPL", show=False):
+def get_ticker_info(api_key, asset_ticker="AAPL", show=False):
 
-    url = f"https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey={api_key}"
+    url = f"https://api.polygon.io/v3/reference/tickers/{asset_ticker}?apiKey={api_key}"
     response = requests.get(url)
 
-    info = handle_response(response, ticker, "No information found", show=show)
+    info = handle_response(response, asset_ticker, "No information found", show=show)
 
     return info
 
