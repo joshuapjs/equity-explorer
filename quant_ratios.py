@@ -15,8 +15,6 @@ def get_capm(api_key, asset_ticker):
     spy_prices = spy.get_prices()["c"]
     spy_returns = spy_prices.pct_change(periods=1).dropna()
 
-    print(len(spy_prices), len(asset_prices))
-
     spy_returns = sm.add_constant(spy_returns)
     model = sm.OLS(asset_returns, spy_returns).fit()
 
@@ -28,4 +26,3 @@ def get_volatility(api_key, asset_ticker, freq=1):
     asset_prices = asset.get_prices()["c"]
     asset_returns = asset_prices.pct_change(periods=freq).dropna()
     return asset_returns.std()
-
