@@ -11,7 +11,7 @@ class Asset:
     """
 
     def __init__(self, api_key, asset_ticker, asset_class,
-                 start=(datetime.today() - timedelta(days=360)).strftime('%Y-%m-%d'),
+                 start=(datetime.today() - timedelta(days=252)).strftime('%Y-%m-%d'),
                  end=datetime.today().strftime('%Y-%m-%d'), frequency="day", limit=1000):
 
         self.api_key = api_key
