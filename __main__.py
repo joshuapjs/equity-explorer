@@ -68,7 +68,7 @@ app.layout = html.Div([
                                  'padding': '5px'
                              }),
         html.Div(style={'height': '20px'}),
-    ])])])
+    ])], fluid=True)])
 
 
 @callback(Output("ratio_table", "data"),
