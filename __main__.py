@@ -1,4 +1,5 @@
 from dash import Dash, dcc, html, dash_table, callback, Output, Input, State
+from price_data import Asset
 import fundamental_ratios as fr
 import dash_bootstrap_components as dbc
 import visualize as viz
@@ -85,7 +86,7 @@ def update_table(n_clicks, ticker):
 
     def add_line(ticker_symbol):
 
-        stock = fr.Stock(key, ticker_symbol, "Stock")
+        stock = fr.Stock(key, ticker_symbol)
 
         line_of_data = {"Ticker": ticker_symbol,
                         "E/P Ratio": fetch_value(stock.ep_ratio, pd.NA),
@@ -120,17 +121,19 @@ def update_graph(n_clicks, ticker):
                                                       y=data["c"],
                                                       name=ticker_symbol))
 
+    spx = Asset(key, "SPX", "Indices")
+    spx_position = spx.get_prices()
+    spx_returns = spx_position.pct_change(periods=1).dropna()
+    spx_returns["c"] = (1 + spx_returns["c"]).cumprod() - 1
+    start_date = spx_returns.index.to_list()[0].strftime('%Y-%m-%d')
+
+    fig = viz.get_line(spx_returns, "SPX")
+
     if "," in ticker:
         symbol_list = ticker.strip().split(",")
-        first_graph_line = (fr.Stock(key, symbol_list[0], "Stock").get_prices()
-                            .pct_change(periods=1)
-                            .dropna()
-                            .cumsum())
-        fig = viz.get_line(first_graph_line, symbol_list[0])
-        symbol_list.remove(symbol_list[0])
 
         for symbol in symbol_list:
-            data = (fr.Stock(key, symbol, "Stock").get_prices()
+            data = (Asset(key, symbol, "Stock", start=start_date).get_prices()
                     .pct_change(periods=1)
                     .dropna())
 
@@ -139,12 +142,12 @@ def update_graph(n_clicks, ticker):
 
         fig.update_layout(title="Returns")
     else:
-        data = (fr.Stock(key, ticker, "Stock").get_prices()
+        data = (Asset(key, ticker, "Stock", start=start_date).get_prices()
                 .pct_change(periods=1)
-                .dropna()
-                .cumsum())
+                .dropna())
 
-        fig = viz.get_line(data, ticker)
+        data["c"] = (1 + data["c"]).cumprod() - 1
+        add_graph_line(ticker, data, fig)
 
     fig = fig.update_layout(yaxis_title="Returns")
 
@@ -163,14 +166,14 @@ def update_hist(n_clicks, ticker):
 
     if "," in ticker:
         symbol_list = ticker.strip().split(",")
-        first_hist_data = (fr.Stock(key, symbol_list[0], "Stock").get_prices()
+        first_hist_data = (fr.Stock(key, symbol_list[0]).get_prices()
                            .pct_change(periods=1)
                            .dropna())
         fig = viz.get_histogram(first_hist_data, symbol_list[0])
         symbol_list.remove(symbol_list[0])
 
         for symbol in symbol_list:
-            data = (fr.Stock(key, symbol, "Stock").get_prices()
+            data = (fr.Stock(key, symbol).get_prices()
                     .pct_change(periods=1)
                     .dropna())
 
@@ -179,7 +182,7 @@ def update_hist(n_clicks, ticker):
         fig.update_layout(title="Distribution")
 
     else:
-        data = (fr.Stock(key, ticker, "Stock").get_prices()
+        data = (fr.Stock(key, ticker).get_prices()
                 .pct_change(periods=1)
                 .dropna())
 

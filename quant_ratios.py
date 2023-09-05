@@ -18,13 +18,13 @@ def get_capm(api_key, asset_ticker, freq=1):
     asset_returns = asset_prices.pct_change(periods=1).dropna()
     asset_returns.index = asset_returns.index.normalize()
 
-    spy = Asset(api_key, "SPX", "Indices")
-    spy_prices = spy.get_prices()["c"]
-    spy_prices.rename("SPX", inplace=True)
-    spy_returns = spy_prices.pct_change(periods=freq).dropna()
-    spy_returns.index = spy_returns.index.normalize()
+    spx = Asset(api_key, "SPX", "Indices")
+    spx_position = spx.get_prices()["c"]
+    spx_position.rename("SPX", inplace=True)
+    spx_returns = spx_position.pct_change(periods=freq).dropna()
+    spx_returns.index = spx_returns.index.normalize()
 
-    concatenated_returns = pd.concat([asset_returns, spy_returns], axis=1).dropna()
+    concatenated_returns = pd.concat([asset_returns, spx_returns], axis=1).dropna()
 
     market_portfolio = sm.add_constant(concatenated_returns["SPX"])
     stock_returns = concatenated_returns[asset_ticker]
@@ -46,12 +46,8 @@ def get_sharpe_ratio(api_key, assert_ticker):
                   start=(datetime.today() - timedelta(days=252)).strftime('%Y-%m-%d'))
     asset_prices = asset.get_prices()["c"].to_list()
     asset_return = (asset_prices[-1] - asset_prices[0]) / asset_prices[0]
-    print(asset_return)
     asset_volatility = get_realized_volatility(api_key, assert_ticker)
-    print(asset_volatility)
     risk_free_rate = 0.0538  # 53 Weeks T-Bill rate as of 2023-09-05
     sharpe_ratio = (asset_return - risk_free_rate) / asset_volatility
 
     return sharpe_ratio
-
-
