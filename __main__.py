@@ -1,5 +1,6 @@
 from dash import Dash, dcc, html, dash_table, callback, Output, Input, State
 from price_data import Asset
+import quant_ratios as qr
 import fundamental_ratios as fr
 import dash_bootstrap_components as dbc
 import visualize as viz
@@ -9,7 +10,6 @@ import os
 
 key = os.getenv("API_Polygon")
 app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
-
 app.layout = html.Div([
     html.Div(children="Portfolio Stack",
              style={"fontSize": "24px",
@@ -68,6 +68,40 @@ app.layout = html.Div([
                                  'padding': '5px'
                              }),
         html.Div(style={'height': '20px'}),
+        dash_table.DataTable(data=[{"Ticker": "AAPL",
+                                    "Alpha": "calculating.",
+                                    "Beta": "calculating.",
+                                    "Volatility": "calculating.",
+                                    "Sharpe ratio": "calculating."}],
+                             columns=[{"name": i, "id": i} for i in [
+                                 "Ticker",
+                                 "Alpha",
+                                 "Beta",
+                                 "Volatility",
+                                 "Sharpe ratio"]],
+                             page_size=6,
+                             id="quant_ratio_table",
+                             style_as_list_view=True,
+                             style_table={
+                                 'overflowX': 'auto',
+                                 'border': '1px solid #636efa'
+                             },
+                             style_header={
+                                 'backgroundColor': '#101010',
+                                 'color': 'white',
+                                 'fontWeight': 'bold',
+                                 'borderBottom': '1px solid #636efa',
+                                 'padding': '5px'
+                             },
+                             style_cell={
+                                 'backgroundColor': '#101010',
+                                 'color': 'white',
+                                 'fontFamily': 'Arial',
+                                 'fontSize': 14,
+                                 'border': '1px solid #636efa',
+                                 'padding': '5px'
+                             }),
+        html.Div(style={'height': '20px'}),
     ])], fluid=True)])
 
 
@@ -95,6 +129,45 @@ def update_table(n_clicks, ticker):
                         "ROE": fetch_value(stock.ro_equity, pd.NA),
                         "ROA": fetch_value(stock.ro_assets, pd.NA),
                         "Average Dividend growth": fetch_value(stock.div_growth, pd.NA)}
+
+        data.append(line_of_data)
+
+    if "," in ticker:
+        ticker_list = ticker.strip().split(",")
+
+        add_line(ticker_list[0])
+        ticker_list.remove(ticker_list[0])
+
+        for ticker in ticker_list:
+            add_line(ticker)
+    else:
+        add_line(ticker)
+
+    return data
+
+
+@callback(Output("quant_ratio_table", "data"),
+          Input("search_button", "n_clicks"),
+          State("ticker_as_text", "value"))
+def update_quant_table(n_clicks, ticker):
+    data = []
+
+    def fetch_value(object_method, default_value):
+        try:
+            return object_method()
+        except Exception as e:
+            print(e)
+            return default_value
+
+    def add_line(ticker_symbol):
+
+        capm_values = qr.get_capm(key, ticker_symbol)
+
+        line_of_data = {"Ticker": ticker_symbol,
+                        "Alpha": round(capm_values[0], 3),
+                        "Beta": round(capm_values[1], 3),
+                        "Volatility": round(qr.get_realized_volatility(key, ticker_symbol), 3),
+                        "Sharpe ratio": round(qr.get_sharpe_ratio(key, ticker_symbol), 3)}
 
         data.append(line_of_data)
 

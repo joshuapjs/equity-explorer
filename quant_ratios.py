@@ -3,9 +3,6 @@ import numpy as np
 import statsmodels.api as sm
 import pandas as pd
 from price_data import Asset
-import os
-
-key = os.environ.get("API_Polygon")
 
 
 def get_capm(api_key, asset_ticker, freq=1):
@@ -30,7 +27,7 @@ def get_capm(api_key, asset_ticker, freq=1):
     stock_returns = concatenated_returns[asset_ticker]
     model = sm.OLS(stock_returns, market_portfolio).fit()
 
-    return model.summary()
+    return model.params
 
 
 def get_realized_volatility(api_key, asset_ticker, freq=1):
