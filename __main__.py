@@ -9,8 +9,10 @@ import plotly
 import os
 
 key = os.getenv("API_Polygon")
-app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
+
+app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])  # Instantiating the basis for the Dash App
 app.layout = html.Div([
+    # header / name of the Application
     html.Div(children="Portfolio Stack",
              style={"fontSize": "24px",
                     'color': 'white',
@@ -18,18 +20,22 @@ app.layout = html.Div([
                     }),
 
     html.Div(style={'height': '20px'}),
+    # Search field for the tickers that should be analyzed
     dcc.Input(id="ticker_as_text".format("search"),
               value="AAPL".format("search")),
+    # Search button to confirm the input
     dbc.Button('Submit', id='search_button', color='#101010', style={'backgroundColor': '#101010',
                                                                      'color': 'white',
                                                                      'fontFamily': 'Arial',
                                                                      'border': '1px solid #636efa'
                                                                      }),
     html.Div(style={'height': '20px'}),
+    # Container containing the graphs align in a row
     dbc.Container([dbc.Row([
         dbc.Col(dcc.Graph(figure={}, id="price_line")),
         dbc.Col(dcc.Graph(figure={}, id="price_hist")),
         html.Div(style={'height': '20px'}),
+        # DataTable containing the fundamental ratios
         dash_table.DataTable(data=[{"Ticker": "AAPL",
                                     "E/P Ratio": "calculating.",
                                     "P/B Ratio": "calculating.",
@@ -68,6 +74,7 @@ app.layout = html.Div([
                                  'padding': '5px'
                              }),
         html.Div(style={'height': '20px'}),
+        # DataTable containing the quantitative ratios
         dash_table.DataTable(data=[{"Ticker": "AAPL",
                                     "Alpha": "calculating.",
                                     "Beta": "calculating.",
@@ -80,7 +87,7 @@ app.layout = html.Div([
                                  "Volatility",
                                  "Sharpe ratio"]],
                              page_size=6,
-                             id="quant_ratio_table",
+                             id="quant_table",
                              style_as_list_view=True,
                              style_table={
                                  'overflowX': 'auto',
@@ -108,9 +115,10 @@ app.layout = html.Div([
 @callback(Output("ratio_table", "data"),
           Input("search_button", "n_clicks"),
           State("ticker_as_text", "value"))
-def update_table(n_clicks, ticker):
+def update_ratio_table(n_clicks, ticker):
     data = []
 
+    # function to fetch the data needed for each ratio
     def fetch_value(object_method, default_value):
         try:
             return object_method()
@@ -118,6 +126,7 @@ def update_table(n_clicks, ticker):
             print(e)
             return default_value
 
+    # function to add a line to the DataTable for each ticker
     def add_line(ticker_symbol):
 
         stock = fr.Stock(key, ticker_symbol)
@@ -132,6 +141,7 @@ def update_table(n_clicks, ticker):
 
         data.append(line_of_data)
 
+    # Detecting if only one company of multiple tickers were requested
     if "," in ticker:
         ticker_list = ticker.strip().split(",")
 
@@ -146,19 +156,13 @@ def update_table(n_clicks, ticker):
     return data
 
 
-@callback(Output("quant_ratio_table", "data"),
+@callback(Output("quant_table", "data"),
           Input("search_button", "n_clicks"),
           State("ticker_as_text", "value"))
 def update_quant_table(n_clicks, ticker):
     data = []
 
-    def fetch_value(object_method, default_value):
-        try:
-            return object_method()
-        except Exception as e:
-            print(e)
-            return default_value
-
+    # function to add a line to the DataTable for each ticker
     def add_line(ticker_symbol):
 
         capm_values = qr.get_capm(key, ticker_symbol)
@@ -171,6 +175,7 @@ def update_quant_table(n_clicks, ticker):
 
         data.append(line_of_data)
 
+    # Detecting if only one company of multiple tickers were requested
     if "," in ticker:
         ticker_list = ticker.strip().split(",")
 
@@ -189,6 +194,8 @@ def update_quant_table(n_clicks, ticker):
           Input("search_button", "n_clicks"),
           State("ticker_as_text", "value"))
 def update_graph(n_clicks, ticker):
+
+    # function to add a line to the Graph for each ticker
     def add_graph_line(ticker_symbol, data, figure):
         figure.add_trace(plotly.graph_objects.Scatter(x=data.index,
                                                       y=data["c"],
@@ -202,6 +209,7 @@ def update_graph(n_clicks, ticker):
 
     fig = viz.get_line(spx_returns, "SPX")
 
+    # Detecting if only one company of multiple tickers were requested
     if "," in ticker:
         symbol_list = ticker.strip().split(",")
 
@@ -231,12 +239,15 @@ def update_graph(n_clicks, ticker):
           Input("search_button", "n_clicks"),
           State("ticker_as_text", "value"))
 def update_hist(n_clicks, ticker):
+
+    # Function to add additional data to the histogram
     def add_hist_trace(ticker_symbol, data, figure):
         figure.add_trace(plotly.graph_objects.Histogram(x=data["c"],
                                                         y=data["c"],
                                                         name=ticker_symbol,
                                                         opacity=0.7))
 
+    # Detecting if only one company of multiple tickers were requested
     if "," in ticker:
         symbol_list = ticker.strip().split(",")
         first_hist_data = (fr.Stock(key, symbol_list[0]).get_prices()
