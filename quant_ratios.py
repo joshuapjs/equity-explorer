@@ -6,6 +6,13 @@ from price_data import Asset
 
 
 def get_capm(api_key, asset_ticker, freq=1):
+    """
+    Function to fetch the alpha and beta value for give ticker
+    :param api_key: key for the Polygon.io API
+    :param asset_ticker: ticker as a string
+    :param freq: frequency over how many periods the returns should be calculated
+    :return: list with alpha and beta value
+    """
 
     asset = Asset(api_key, asset_ticker, "Stock",
                   start=(datetime.today() - timedelta(days=720)).strftime('%Y-%m-%d'))
@@ -31,20 +38,34 @@ def get_capm(api_key, asset_ticker, freq=1):
 
 
 def get_realized_volatility(api_key, asset_ticker, freq=1):
+    """
+    calculate the realized volatility for the last 365 days including weekends and holidays for the given ticker
+    :param api_key: key for the Polygon.io API
+    :param asset_ticker: ticker as a string
+    :param freq: frequency over how many periods the returns should be calculated
+    :return: scalar value of the realized volatility
+    """
     asset = Asset(api_key, asset_ticker, "Stock",
                   start=(datetime.today() - timedelta(days=360)).strftime('%Y-%m-%d'))  # 1 Year realized volatility
     asset_prices = asset.get_prices()["c"]
     asset_returns = asset_prices.pct_change(periods=freq).dropna()
+
     return asset_returns.std() * np.sqrt(252)
 
 
-def get_sharpe_ratio(api_key, assert_ticker):
+def get_sharpe_ratio(api_key, assert_ticker, risk_free_rate=0.0538):
+    """
+    calculate the current sharpe ratio of the given ticker
+    :param risk_free_rate: 53 Weeks T-Bill rate as of 2023-09-05
+    :param api_key: key for the Polygon.io API
+    :param assert_ticker: ticker as a string
+    :return: scalar value of the sharpe ratio
+    """
     asset = Asset(api_key, assert_ticker, "Stock",
                   start=(datetime.today() - timedelta(days=252)).strftime('%Y-%m-%d'))
     asset_prices = asset.get_prices()["c"].to_list()
     asset_return = (asset_prices[-1] - asset_prices[0]) / asset_prices[0]
     asset_volatility = get_realized_volatility(api_key, assert_ticker)
-    risk_free_rate = 0.0538  # 53 Weeks T-Bill rate as of 2023-09-05
     sharpe_ratio = (asset_return - risk_free_rate) / asset_volatility
 
     return sharpe_ratio
