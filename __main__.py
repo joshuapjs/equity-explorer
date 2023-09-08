@@ -5,6 +5,7 @@ import fundamental_ratios as fr
 import dash_bootstrap_components as dbc
 import visualize as viz
 import pandas as pd
+import utils
 import plotly
 import os
 
@@ -142,16 +143,7 @@ def update_ratio_table(n_clicks, ticker):
         data.append(line_of_data)
 
     # Detecting if only one company of multiple tickers were requested
-    if "," in ticker:
-        ticker_list = ticker.strip().split(",")
-
-        add_line(ticker_list[0])
-        ticker_list.remove(ticker_list[0])
-
-        for ticker in ticker_list:
-            add_line(ticker)
-    else:
-        add_line(ticker)
+    utils.process_table_data(ticker, add_line)
 
     return data
 
@@ -175,17 +167,7 @@ def update_quant_table(n_clicks, ticker):
 
         data.append(line_of_data)
 
-    # Detecting if only one company of multiple tickers were requested
-    if "," in ticker:
-        ticker_list = ticker.strip().split(",")
-
-        add_line(ticker_list[0])
-        ticker_list.remove(ticker_list[0])
-
-        for ticker in ticker_list:
-            add_line(ticker)
-    else:
-        add_line(ticker)
+    utils.process_table_data(ticker, add_line)
 
     return data
 
