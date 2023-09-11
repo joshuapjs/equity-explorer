@@ -58,8 +58,9 @@ class Stock(Asset):
 
     def current_ratio(self):
 
-        assets = self.get_fundamentals(statement_type="balance_sheet").loc[(100, "Assets")][0]
-        liabilities = self.get_fundamentals(statement_type="balance_sheet").loc[(600, "Liabilities")][0]
+        fundamental_data = self.get_fundamentals(statement_type="balance_sheet")
+        assets = fundamental_data.loc[(100, "Assets")][0]
+        liabilities = fundamental_data.loc[(600, "Liabilities")][0]
 
         try:
             pb_ratio = assets / liabilities
