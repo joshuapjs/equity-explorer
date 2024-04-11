@@ -1,13 +1,14 @@
-from dash import Dash, dcc, html, dash_table, callback, Output, Input, State
-from price_data import Asset
-import quant_ratios as qr
-import fundamental_ratios as fr
-import dash_bootstrap_components as dbc
-import visualize as viz
-import pandas as pd
-import utils
-import plotly
 import os
+from dash import Dash, dcc, html, dash_table, callback, Output, Input, State
+import dash_bootstrap_components as dbc
+import pandas as pd
+import plotly
+from . import visualize as viz
+from . import utils
+from . import fundamental_ratios as fr
+from . import quant_ratios as qr
+from .price_data import Asset
+
 
 key = os.getenv("API_Polygon")
 

@@ -1,8 +1,8 @@
-import pandas as pd
 from datetime import datetime, timedelta
-import fundamental_data as f
+import pandas as pd
 import requests
 import json
+from . import fundamental_data as f
 
 
 class Asset:

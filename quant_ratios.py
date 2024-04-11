@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import statsmodels.api as sm
 import pandas as pd
-from price_data import Asset
+from .price_data import Asset
 
 
 def get_capm(api_key, asset_ticker, freq=1):

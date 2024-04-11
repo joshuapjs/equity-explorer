@@ -1,3 +1,8 @@
+"""
+This is just a module to aggregate code that belongs to different modules but has no clear space within the program.
+"""
+
+
 def process_table_data(asset_ticker_s, func):
 
     if "," in asset_ticker_s:
