@@ -1,6 +1,5 @@
 from dash import Dash, dcc, html, dash_table, callback, Output, Input, State
-# from price_data import Asset
-from . import price_data.Asset
+from price_data import Asset
 import quant_ratios as qr
 import fundamental_ratios as fr
 import dash_bootstrap_components as dbc
