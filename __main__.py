@@ -144,6 +144,9 @@ def update_ratio_table(n_clicks, ticker):
         data.append(line_of_data)
 
     # Detecting if only one company of multiple tickers were requested
+    # The function essentially detects whether there is one or multiple tickers.
+    # And requests calls add_line either multiple times or only one time, depending if there
+    # are multiple tickers or only one.
     utils.process_table_data(ticker, add_line)
 
     return data
