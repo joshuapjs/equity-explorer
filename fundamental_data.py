@@ -13,6 +13,8 @@ The values are stored as pickle elements which is in general a dependency of thi
 import subprocess
 import atexit
 import json
+import time
+import os
 import pickle
 import pandas as pd
 import requests
@@ -24,21 +26,25 @@ def start_redis_server():
     """
     Start the Redis server using subprocess.
     """
+    # Check if a redis server is already running
+    if os.system("redis-cli ping") == 0:
+        return redis.Redis(host='localhost', port=6379, decode_responses=True)
     # Ensure that the subprocess doesn't block the Python script.
     subprocess.Popen(["redis-server"])
+    time.sleep(2)
     r = redis.Redis(host='localhost', port=6379, decode_responses=True)
     r.set("Test", "True")
+    return redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 # Define a function that executes once the program is terminated.
 def stop_redis_server():
-    redis_server.terminate()
-    redis_server.wait()
+    os.system("redis-cli shutdown")
+
+# Start the redis session to save data in memory.
+r = start_redis_server()
 
 # Register the exit function.
 atexit.register(stop_redis_server)
-
-# Start the redis session to save data in memory.
-start_redis_server()
 
 
 def handle_response(response, asset_ticker, client_error_message, show=False):
@@ -162,7 +168,6 @@ def get_fundamentals(api_key, asset_ticker="AAPL", show=False, aggregate=False, 
     return all_statements
 
 
-# TODO Find a solution when the redis server needs to be shutdown.  
 def get_ticker_info(api_key, asset_ticker="AAPL", show=False):
     """
     This function is used, to return info about a given ticker.
@@ -185,7 +190,7 @@ def get_ticker_info(api_key, asset_ticker="AAPL", show=False):
     
     # Store the info through redis to retrieve it faster later, if necessary.
     info_pickled = pickle.dumps(info_df)
-    r.set(asset_ticker + "_info", all_statements_pickled)
+    r.set(asset_ticker + "_info", info_pickled)
 
     return info_df
 
@@ -211,6 +216,6 @@ def get_dividends(api_key, ticker="AAPL", show=False):
 
     # Store the info through redis to retrieve it faster later, if necessary.
     dividends_pickled = pickle.dumps(dividends_df)
-    r.set(asset_ticker + "_dividends", dividends_pickled)
+    r.set(ticker + "_dividends", dividends_pickled)
 
     return dividends_df

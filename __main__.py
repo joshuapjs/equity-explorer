@@ -123,7 +123,7 @@ def update_ratio_table(n_clicks, ticker):
     # function to fetch the data needed for each ratio
     def fetch_value(object_method, default_value):
         try:
-            return object_method()
+            return object_method
         except Exception as e:
             print(e)
             return default_value
@@ -134,12 +134,12 @@ def update_ratio_table(n_clicks, ticker):
         stock = fr.Stock(key, ticker_symbol)
 
         line_of_data = {"Ticker": ticker_symbol,
-                        "E/P Ratio": fetch_value(stock.ep_ratio, pd.NA),
-                        "P/B Ratio": fetch_value(stock.pb_ratio, pd.NA),
-                        "Current Ratio": fetch_value(stock.current_ratio, pd.NA),
-                        "ROE": fetch_value(stock.ro_equity, pd.NA),
-                        "ROA": fetch_value(stock.ro_assets, pd.NA),
-                        "Average Dividend growth": fetch_value(stock.div_growth, pd.NA)}
+                        "E/P Ratio": fetch_value(fr.ep_ratio(stock), pd.NA),
+                        "P/B Ratio": fetch_value(fr.pb_ratio(stock), pd.NA),
+                        "Current Ratio": fetch_value(fr.current_ratio(stock), pd.NA),
+                        "ROE": fetch_value(fr.ro_equity(stock), pd.NA),
+                        "ROA": fetch_value(fr.ro_assets(stock), pd.NA),
+                        "Average Dividend growth": fetch_value(fr.div_growth(stock), pd.NA)}
 
         data.append(line_of_data)
 

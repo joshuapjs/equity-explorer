@@ -49,7 +49,8 @@ def ep_ratio(stock_class: Stock):
 
     # Grabbing the current stock price.
     # TODO get the price through a faster request. 
-    prick = stock_class.get_prices()["c"][-1]
+    price = stock_class.get_prices()["c"][-1]
+    print("ep_ratio", summed_eps, type(summed_eps), price, type(price))  # TODO Remove this line - just for debugging
 
     # Calculate the actual calculation.
     try:
