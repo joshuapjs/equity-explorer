@@ -1,8 +1,9 @@
-import asyncio
+import datetime as dt
+import pandas as pd
+import multiprocessing
+from scipy.stats import gmean
 from .price_data import Asset
 from .fundamental_data import get_dividends
-from scipy.stats import gmean
-import datetime as dt
 
 # This class primarily functions as a plain old data class.
 #
@@ -14,7 +15,7 @@ class Stock(Asset):
         super().__init__(api_key, asset_ticker, asset_class)
 
 
-def ep_ratio(stock_class: Stock):
+def ep_ratio(stock_class: Stock, concurrency_manager):
     """
     This function calculates the Earnings-Yield of a stock.
     
@@ -50,17 +51,18 @@ def ep_ratio(stock_class: Stock):
     # Grabbing the current stock price.
     # TODO get the price through a faster request. 
     price = stock_class.get_prices()["c"][-1]
-    print("ep_ratio", summed_eps, type(summed_eps), price, type(price))  # TODO Remove this line - just for debugging
 
     # Calculate the actual calculation.
     try:
-        pe_ratio = summed_eps / price
-        return round(pe_ratio, 2)
+        stock_ep_ratio = summed_eps / price
+        concurrency_manager["E/P Ratio"] = {"E/P Ratio" : round(stock_ep_ratio, 2)}
+        return round(stock_ep_ratio, 2)
     except ZeroDivisionError:
+        concurrency_manager["E/P Ratio"] = {"E/P Ratio" : pd.NA}
         return None
 
 
-def pb_ratio(stock_class: Stock):
+def pb_ratio(stock_class: Stock, concurrency_manager):
     """
     Calculate the Price-To-Book ratio.
 
@@ -80,12 +82,14 @@ def pb_ratio(stock_class: Stock):
     # Do the the actual calculation.
     try:
         pb_ratio = price / (equity / shares)
+        concurrency_manager["P/B Ratio"] = {"P/B Ratio" : round(pb_ratio, 2)}
         return round(pb_ratio, 2)
     except ZeroDivisionError:
+        concurrency_manager["P/B Ratio"] = {"P/B Ratio" : pd.NA}
         return None
 
 
-def current_ratio(stock_class: Stock):
+def current_ratio(stock_class: Stock, concurrency_manager):
     """
     Calculate the Current Ratio for a Stock.
     stock_class: Stock class that stored all its specific data to make requests with.
@@ -99,13 +103,15 @@ def current_ratio(stock_class: Stock):
 
     # Do the actual calculation.
     try:
-        pb_ratio = assets / liabilities
-        return round(pb_ratio, 2)
+        current_ratio = assets / liabilities
+        concurrency_manager["Current Ratio"] = {"Current Ratio" : round(current_ratio, 2)}
+        return round(current_ratio, 2)
     except ZeroDivisionError:
+        concurrency_manager["Current Ratio"] = {"Current Ratio" : pd.NA}
         return None
 
 
-def ro_equity(stock_class: Stock):
+def ro_equity(stock_class: Stock, concurrency_manager):
     """
     Calculate the Return-On-Equity for a given stock.
 
@@ -120,12 +126,14 @@ def ro_equity(stock_class: Stock):
     # Do the actual calculation.
     try:
         roe = income / equity
+        concurrency_manager["ROE"] = {"ROE" : round(roe, 2)}
         return round(roe, 2)
     except ZeroDivisionError:
+        concurrency_manager["ROE"] = {"ROE" : pd.NA}
         return None
 
 
-def ro_assets(stock_class: Stock):
+def ro_assets(stock_class: Stock, concurrency_manager):
     """
     Calculate the Return-On-Asset for a given stock.
 
@@ -140,12 +148,14 @@ def ro_assets(stock_class: Stock):
     # Do the actual calculation.
     try:
         roa = income / assets
+        concurrency_manager["ROA"] = {"ROA" : round(roa, 2)}
         return round(roa, 2)
     except ZeroDivisionError:
+        concurrency_manager["ROA"] = {"ROA" : pd.NA}
         return None
 
 
-def div_growth(stock_class: Stock):
+def div_growth(stock_class: Stock, concurrency_manager):
     """
     Calculaten the Dividend Growth for a given Stock.
     
@@ -160,6 +170,7 @@ def div_growth(stock_class: Stock):
     dividends_growth = dividends["cash_amount"][::-1].pct_change(periods=1).dropna()
     # Calculate the geometric average of the dividend growth.
     average_dividends = round(gmean([rate + 1 for rate in dividends_growth.to_list()]) - 1, 3)
-
+    
+    concurrency_manager["Average Dividend growth"] = {"Average Dividend growth" : average_dividends}
     return average_dividends
 

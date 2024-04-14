@@ -8,6 +8,7 @@ The logic within redis is as follows:
     - value_type: The kind of data requested. Through this Module it is possible to request "fundamentals", "ticker_info" and "dividends".
 
 The values are stored as pickle elements which is in general a dependency of this module and will be transformed to Pandas-DataFrames.
+A subscription for the Polygon.io Stocks-Starter is necessary to request the data.
 """
 
 import subprocess
@@ -41,10 +42,10 @@ def stop_redis_server():
     os.system("redis-cli shutdown")
 
 # Start the redis session to save data in memory.
-r = start_redis_server()
+#r = start_redis_server()
 
 # Register the exit function.
-atexit.register(stop_redis_server)
+#atexit.register(stop_redis_server)
 
 
 def handle_response(response, asset_ticker, client_error_message, show=False):
@@ -81,9 +82,9 @@ def get_fundamentals(api_key, asset_ticker="AAPL", show=False, aggregate=False, 
     :return: Dictionary of the following form -> (ticker, filing_date, number) : statement_df.
     """
     # Test and try to retrieve data from memory.
-    if r.get("test") and r.get(asset_ticker + "_fundamentals"):
-        already_stored_df = pd.read_pickle(r.get(asset_ticker + "_fundamentals"))
-        return already_stored_df
+#    if r.get("test") and r.get(asset_ticker + "_fundamentals"):
+#        already_stored_df = pd.read_pickle(r.get(asset_ticker + "_fundamentals"))
+#        return already_stored_df
 
     # Url to request the data from Polygon.io.
     url = (f"https://api.polygon.io/vX/reference/financials?ticker="
@@ -119,8 +120,8 @@ def get_fundamentals(api_key, asset_ticker="AAPL", show=False, aggregate=False, 
 
             # Store the fundamentals of this ticker in memory to retrieve it faster if necessary.
             # Value will be overwritten if aggregate is True.
-            all_statements_pickled = pickle.dumps(all_statements)
-            r.set(asset_ticker + "_fundamentals", all_statements_pickled)
+#            all_statements_pickled = pickle.dumps(all_statements)
+#            r.set(asset_ticker + "_fundamentals", all_statements_pickled)
 
     # Aggregate the statements by statement type.
     if aggregate:
@@ -162,8 +163,8 @@ def get_fundamentals(api_key, asset_ticker="AAPL", show=False, aggregate=False, 
         all_statements.sort_index(axis=1, inplace=True, ascending=False)
     
     # Store the fundamentals of this ticker in memory to retrieve it faster if necessary.
-    all_statements_pickled = pickle.dumps(all_statements)
-    r.set(asset_ticker + "_fundamentals", all_statements_pickled)
+#    all_statements_pickled = pickle.dumps(all_statements)
+#    r.set(asset_ticker + "_fundamentals", all_statements_pickled)
 
     return all_statements
 
@@ -176,9 +177,9 @@ def get_ticker_info(api_key, asset_ticker="AAPL", show=False):
     :return: A DataFrame containing the info about a given stock.
     """
     # Test and try to retrieve data from memory.
-    if r.get("test") and r.get(asset_ticker + "_info"):
-        already_stored_df = pd.read_pickle(r.get(asset_ticker + "_info"))
-        return already_stored_df 
+#    if r.get("test") and r.get(asset_ticker + "_info"):
+#        already_stored_df = pd.read_pickle(r.get(asset_ticker + "_info"))
+#        return already_stored_df 
     
     # Request the data from Polygon.io.
     url = f"https://api.polygon.io/v3/reference/tickers/{asset_ticker}?apiKey={api_key}"
@@ -189,8 +190,8 @@ def get_ticker_info(api_key, asset_ticker="AAPL", show=False):
     info_df = pd.DataFrame(info)["results"]  # First declaring and then filtering the dataframe is the correct order here.
     
     # Store the info through redis to retrieve it faster later, if necessary.
-    info_pickled = pickle.dumps(info_df)
-    r.set(asset_ticker + "_info", info_pickled)
+#    info_pickled = pickle.dumps(info_df)
+#    r.set(asset_ticker + "_info", info_pickled)
 
     return info_df
 
@@ -203,9 +204,9 @@ def get_dividends(api_key, ticker="AAPL", show=False):
     :return: A DataFrame containing the dividends of a given stock.
     """
     # Test and try to retrieve data from memory.
-    if r.get("test") and r.get(asset_ticker + "_dividends"):
-        already_stored_df = pd.read_pickle(r.get(asset_ticker + "_dividends"))
-        return already_stored_df 
+#    if r.get("test") and r.get(asset_ticker + "_dividends"):
+#        already_stored_df = pd.read_pickle(r.get(asset_ticker + "_dividends"))
+#        return already_stored_df 
     
     # Request the data from Polygon.io.
     url = f"https://api.polygon.io/v3/reference/dividends?ticker={ticker}&apiKey={api_key}"
@@ -215,7 +216,7 @@ def get_dividends(api_key, ticker="AAPL", show=False):
     dividends_df = pd.DataFrame(data)  # First filtering for "results" then declaring the df is correct order here.
 
     # Store the info through redis to retrieve it faster later, if necessary.
-    dividends_pickled = pickle.dumps(dividends_df)
-    r.set(ticker + "_dividends", dividends_pickled)
+#    dividends_pickled = pickle.dumps(dividends_df)
+#    r.set(ticker + "_dividends", dividends_pickled)
 
     return dividends_df

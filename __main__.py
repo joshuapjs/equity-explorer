@@ -1,4 +1,8 @@
 import os
+import re
+import multiprocessing
+from threading import Timer
+import webbrowser
 from dash import Dash, dcc, html, dash_table, callback, Output, Input, State
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -113,41 +117,60 @@ app.layout = html.Div([
         html.Div(style={'height': '20px'}),
     ])], fluid=True)])
 
+def add_table_line(ticker_symbol: str):
+    """
+    function to add a line to the DataTable for each ticker.
+
+    :param ticker_symbol: This is a function to cuncurrently calculate the values
+    for a line for each stock given as a list through the ticker_symbol.
+    :return: Returns a dictionary that will be appended to a list to be recognized as a line
+    of data for a Dash-data-table.
+    """
+    # Feeding the POD with its values.
+    stock = fr.Stock(key, ticker_symbol)
+    
+    # Setting up the object to dirstribute the data.
+    manager = multiprocessing.Manager()
+    return_dict = manager.dict()
+    # For each value of a column there is a task created.
+    # NOTE: The measures can be modified but have to return a dictionary (see output of function in fr).
+    #       It is also necessary to adjust the placeholder data at the top so that all datapoints are allocated correctly.
+    #       Each new measures have to work with multiprocessing.Manager().manager.dict().
+    tasks = [fr.ep_ratio, fr.pb_ratio, fr.current_ratio,
+             fr.ro_equity, fr.ro_assets, fr.div_growth]
+
+    # Each Process is added to jobs to call join() on them and awaiting their result.
+    jobs = []
+    for task in tasks:
+        p = multiprocessing.Process(target=task, args=(stock, return_dict))
+        jobs.append(p)
+        p.start()
+    
+    # calling join() on each process to wait until they are finished.
+    for proc in jobs:
+        proc.join()
+    
+    # Preparation of the data for the output.
+    calculated_ratios = return_dict.values()
+    # Ticker-element should remain first in line but requires not its own process.
+    line_of_data = {"Ticker": ticker_symbol}
+    for item in calculated_ratios:
+        line_of_data.update(item)
+
+    return line_of_data
+
 
 @callback(Output("ratio_table", "data"),
           Input("search_button", "n_clicks"),
           State("ticker_as_text", "value"))
 def update_ratio_table(n_clicks, ticker):
     data = []
-
-    # function to fetch the data needed for each ratio
-    def fetch_value(object_method, default_value):
-        try:
-            return object_method
-        except Exception as e:
-            print(e)
-            return default_value
-
-    # function to add a line to the DataTable for each ticker
-    def add_line(ticker_symbol):
-
-        stock = fr.Stock(key, ticker_symbol)
-
-        line_of_data = {"Ticker": ticker_symbol,
-                        "E/P Ratio": fetch_value(fr.ep_ratio(stock), pd.NA),
-                        "P/B Ratio": fetch_value(fr.pb_ratio(stock), pd.NA),
-                        "Current Ratio": fetch_value(fr.current_ratio(stock), pd.NA),
-                        "ROE": fetch_value(fr.ro_equity(stock), pd.NA),
-                        "ROA": fetch_value(fr.ro_assets(stock), pd.NA),
-                        "Average Dividend growth": fetch_value(fr.div_growth(stock), pd.NA)}
-
-        data.append(line_of_data)
-
-    # Detecting if only one company of multiple tickers were requested
-    # The function essentially detects whether there is one or multiple tickers.
-    # And requests calls add_line either multiple times or only one time, depending if there
-    # are multiple tickers or only one.
-    utils.process_table_data(ticker, add_line)
+    ticker_list = re.findall(r'[A-Z]*', ticker)
+    clean_ticker_list = [element for element in ticker_list if element != '']
+    
+    # Creating multiple functions or only one.
+    for current_ticker in clean_ticker_list:
+        data.append(add_table_line(current_ticker))
 
     return data
 
@@ -160,7 +183,6 @@ def update_quant_table(n_clicks, ticker):
 
     # function to add a line to the DataTable for each ticker
     def add_line(ticker_symbol):
-
         capm_values = qr.get_capm(key, ticker_symbol)
 
         line_of_data = {"Ticker": ticker_symbol,
@@ -168,10 +190,16 @@ def update_quant_table(n_clicks, ticker):
                         "Beta": round(capm_values[1], 3),
                         "Volatility": round(qr.get_realized_volatility(key, ticker_symbol), 3),
                         "Sharpe ratio": round(qr.get_sharpe_ratio(key, ticker_symbol), 3)}
-
-        data.append(line_of_data)
-
-    utils.process_table_data(ticker, add_line)
+        
+        return line_of_data
+    
+    # Find all tickers in the input string.
+    ticker_list = re.findall(r'[A-Z]*', ticker)
+    clean_ticker_list = [element for element in ticker_list if element != '']
+    
+    # Call the function for each element given in the input string.
+    for current_ticker in clean_ticker_list:
+        data.append(add_line(current_ticker))
 
     return data
 
@@ -196,25 +224,19 @@ def update_graph(n_clicks, ticker):
     fig = viz.get_line(spx_returns, "SPX")
 
     # Detecting if only one company of multiple tickers were requested
-    if "," in ticker:
-        symbol_list = ticker.strip().split(",")
-
-        for symbol in symbol_list:
-            data = (Asset(key, symbol, "Stock", start=start_date).get_prices()
-                    .pct_change(periods=1)
-                    .dropna())
-
-            data["c"] = (1 + data["c"]).cumprod() - 1
-            add_graph_line(symbol, data, fig)
-
-        fig.update_layout(title="Returns")
-    else:
-        data = (Asset(key, ticker, "Stock", start=start_date).get_prices()
+    # Find all tickers in the input string.
+    ticker_list = re.findall(r'[A-Z]*', ticker)
+    clean_ticker_list = [element for element in ticker_list if element != '']
+    
+    for symbol in clean_ticker_list:
+        data = (Asset(key, symbol, "Stock", start=start_date).get_prices()
                 .pct_change(periods=1)
                 .dropna())
 
         data["c"] = (1 + data["c"]).cumprod() - 1
-        add_graph_line(ticker, data, fig)
+        add_graph_line(symbol, data, fig)
+
+    fig.update_layout(title="Returns")
 
     fig = fig.update_layout(yaxis_title="Returns")
 
@@ -234,32 +256,29 @@ def update_hist(n_clicks, ticker):
                                                         opacity=0.7))
 
     # Detecting if only one company of multiple tickers were requested
-    if "," in ticker:
-        symbol_list = ticker.strip().split(",")
-        first_hist_data = (fr.Stock(key, symbol_list[0]).get_prices()
-                           .pct_change(periods=1)
-                           .dropna())
-        fig = viz.get_histogram(first_hist_data, symbol_list[0])
-        symbol_list.remove(symbol_list[0])
+    ticker_list = re.findall(r'[A-Z]*', ticker)
+    clean_ticker_list = [element for element in ticker_list if element != '']
+    first_hist_data = (fr.Stock(key, clean_ticker_list[0]).get_prices()
+                       .pct_change(periods=1)
+                       .dropna())
+    
+    fig = viz.get_histogram(first_hist_data, clean_ticker_list[0])
+    clean_ticker_list.remove(clean_ticker_list[0])
 
-        for symbol in symbol_list:
-            data = (fr.Stock(key, symbol).get_prices()
-                    .pct_change(periods=1)
-                    .dropna())
-
-            add_hist_trace(symbol, data, fig)
-
-        fig.update_layout(title="Distribution")
-
-    else:
-        data = (fr.Stock(key, ticker).get_prices()
+    for symbol in clean_ticker_list:
+        data = (fr.Stock(key, symbol).get_prices()
                 .pct_change(periods=1)
                 .dropna())
 
-        fig = viz.get_histogram(data, ticker)
+        add_hist_trace(symbol, data, fig)
+
+    fig.update_layout(title="Distribution")
 
     return fig
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    def open_browser(debug=True):
+      webbrowser.open_new('http://127.0.0.1:8050')
+    Timer(1, open_browser).start()
+    app.run()
