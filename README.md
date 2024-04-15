@@ -1,6 +1,6 @@
 # portfolio-stack
 
-Please first have a look at the [Disclaimer](Disclaimer). Thank you! Now that you are familiar how this application can be used, feel free to continue.  
+Please first have a look at the [Disclaimer](#Disclaimer). Thank you! Now that you are familiar how this application can be used, feel free to continue.  
 
 The Portfolio-Stack was developed to support portfolio construction (of course without putting any capital at risk and only for educational purposes), powered by Polygon API. I intend to further maintain this Repo to expand its capabilities. 
 
