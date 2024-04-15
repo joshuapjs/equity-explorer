@@ -14,6 +14,7 @@ from . import quant_ratios as qr
 from .price_data import Asset
 
 
+# NOTE: Change this Variable if your Key is not stored in an Environment varible.
 key = os.getenv("API_Polygon")
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])  # Instantiating the basis for the Dash App

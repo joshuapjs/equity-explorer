@@ -14,8 +14,7 @@ def get_capm(api_key, asset_ticker, freq=1):
     :return: list with alpha and beta value
     """
 
-    asset = Asset(api_key, asset_ticker, "Stock",
-                  start=(datetime.today() - timedelta(days=720)).strftime('%Y-%m-%d'))
+    asset = Asset(api_key, asset_ticker, "Stock")
 
     asset_prices = asset.get_prices()["c"]
     asset_prices.rename(asset_ticker, inplace=True)
