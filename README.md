@@ -10,7 +10,7 @@ Several different Tickers can be requested and their returns and several differe
 
 Here is a short video to get you excited:
 
-
+https://github.com/joshuapjs/portfolio-stack/assets/82243579/566dd986-d51f-4fae-9c37-bbbc8e9ff994
 
 # Prerequisites
 
