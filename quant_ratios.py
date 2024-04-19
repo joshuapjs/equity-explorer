@@ -49,7 +49,7 @@ def get_realized_volatility(api_key, asset_ticker, freq=1):
     asset_prices = asset.get_prices()["c"]
     asset_returns = asset_prices.pct_change(periods=freq).dropna()
 
-    return asset_returns.std() * np.sqrt(252)
+    return asset_returns.std() * np.sqrt(252)  # TODO Does it really make sense to normalize the volatility with sqrt(252) ?
 
 
 def get_sharpe_ratio(api_key, assert_ticker, risk_free_rate=0.0538):
@@ -61,7 +61,7 @@ def get_sharpe_ratio(api_key, assert_ticker, risk_free_rate=0.0538):
     :return: scalar value of the sharpe ratio
     """
     asset = Asset(api_key, assert_ticker, "Stock",
-                  start=(datetime.today() - timedelta(days=252)).strftime('%Y-%m-%d'))
+                  start=(datetime.today() - timedelta(days=360)).strftime('%Y-%m-%d'))
     asset_prices = asset.get_prices()["c"].to_list()
     asset_return = (asset_prices[-1] - asset_prices[0]) / asset_prices[0]
     asset_volatility = get_realized_volatility(api_key, assert_ticker)

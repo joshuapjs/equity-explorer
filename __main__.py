@@ -165,7 +165,7 @@ def add_table_line(ticker_symbol: str):
           State("ticker_as_text", "value"))
 def update_ratio_table(n_clicks, ticker):
     data = []
-    ticker_list = re.findall(r'[A-Z]*', ticker)  # TODO Tickers can also have a dot inbetween
+    ticker_list = re.findall(r'[A-Z0-9]*\.?[A-Z0-9]*', ticker)  
     clean_ticker_list = [element for element in ticker_list if element != '']
     
     # Creating multiple functions or only one.
@@ -194,7 +194,7 @@ def update_quant_table(n_clicks, ticker):
         return line_of_data
     
     # Find all tickers in the input string.
-    ticker_list = re.findall(r'[A-Z]*', ticker)
+    ticker_list = re.findall(r'[A-Z0-9]*\.?[A-Z0-9]*',ticker)
     clean_ticker_list = [element for element in ticker_list if element != '']
     
     # Call the function for each element given in the input string.
@@ -225,7 +225,7 @@ def update_graph(n_clicks, ticker):
 
     # Detecting if only one company of multiple tickers were requested
     # Find all tickers in the input string.
-    ticker_list = re.findall(r'[A-Z]*', ticker)
+    ticker_list = re.findall(r'[A-Z0-9]*\.?[A-Z0-9]*', ticker)
     clean_ticker_list = [element for element in ticker_list if element != '']
     
     for symbol in clean_ticker_list:
@@ -256,7 +256,7 @@ def update_hist(n_clicks, ticker):
                                                         opacity=0.7))
 
     # Detecting if only one company of multiple tickers were requested
-    ticker_list = re.findall(r'[A-Z]*', ticker)
+    ticker_list = re.findall(r'[A-Z0-9]*\.?[A-Z0-9]*', ticker)
     clean_ticker_list = [element for element in ticker_list if element != '']
     first_hist_data = (fr.Stock(key, clean_ticker_list[0]).get_prices()
                        .pct_change(periods=1)
