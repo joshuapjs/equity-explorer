@@ -8,7 +8,6 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly
 from . import visualize as viz
-from . import utils
 from . import fundamental_ratios as fr
 from . import quant_ratios as qr
 from .price_data import Asset
@@ -134,7 +133,7 @@ def add_table_line(ticker_symbol: str):
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
     # For each value of a column there is a task created.
-    # NOTE: The measures can be modified but have to return a dictionary (see output of function in fr).
+    # NOTE: The measures can be modified but their function have to return a dictionary (see output of function in fr).
     #       It is also necessary to adjust the placeholder data at the top so that all datapoints are allocated correctly.
     #       Each new measures have to work with multiprocessing.Manager().manager.dict().
     tasks = [fr.ep_ratio, fr.pb_ratio, fr.current_ratio,
@@ -166,7 +165,7 @@ def add_table_line(ticker_symbol: str):
           State("ticker_as_text", "value"))
 def update_ratio_table(n_clicks, ticker):
     data = []
-    ticker_list = re.findall(r'[A-Z]*', ticker)
+    ticker_list = re.findall(r'[A-Z]*', ticker)  # TODO Tickers can also have a dot inbetween
     clean_ticker_list = [element for element in ticker_list if element != '']
     
     # Creating multiple functions or only one.
