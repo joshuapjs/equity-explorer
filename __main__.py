@@ -28,12 +28,13 @@ app.layout = html.Div([
     html.Div(style={'height': '20px'}),
     # Search field for the tickers that should be analyzed
     dcc.Input(id="ticker_as_text".format("search"),
-              value="AAPL".format("search")),
+              value="AAPL".format("search"), style={"margin-left": "15px"}),
     # Search button to confirm the input
     dbc.Button('Submit', id='search_button', color='#101010', style={'backgroundColor': '#101010',
                                                                      'color': 'white',
                                                                      'fontFamily': 'Arial',
-                                                                     'border': '1px solid #636efa'
+                                                                     'border': '1px solid #636efa',
+                                                                     'marginLeft': '1.0em'
                                                                      }),
     html.Div(style={'height': '20px'}),
     # Container containing the graphs align in a row
