@@ -23,7 +23,7 @@ def ep_ratio(stock_class: Stock, concurrency_manager):
     :return: Earnings-Yield or None.
     """
     # Setting the start and end date for the request. 
-    start = (dt.datetime.today() - dt.timedelta(days=4)).strftime("%Y-%m-%d")
+    start = (dt.datetime.today() - dt.timedelta(days=720)).strftime("%Y-%m-%d")
     end = dt.datetime.today().strftime("%Y-%m-%d")
 
     # Requesting the fundamental stock data.
@@ -32,18 +32,18 @@ def ep_ratio(stock_class: Stock, concurrency_manager):
     # Fetching the filing dates of the current year. 
     # TODO The file should fetch the most recent values not just from this year.
     filings_dates = fundamentals.columns
-    current_years_filings = [date for date in filings_dates if str(dt.datetime.today().year) in str(date)]
 
-    # Handling the case where there was not enough data released this year. 
-    if 4 > len(current_years_filings) > 0:
-        missing_values = [(4 - int(len(current_years_filings))) * current_years_filings[0]]
-        current_years_filings = current_years_filings + missing_values
-
-    # Handling the case where there was not data released this year.
-    elif len(current_years_filings) == 0:
-        current_years_filings = [date for date in filings_dates
-                                 if str(dt.datetime.today() - dt.timedelta(days=100)) in str(date)]
-
+    # TODO This needs to be engineered more carefully. On this value a lot of metrics are based on.
+    #      Current strategy is to use the values of the past year and this year.
+    #      If there are more recent values this year the values from past year will be ignored.
+    current_years_filings = [date for date in filings_dates if (str(dt.datetime.today().year - 1) in str(date) or str(dt.datetime.today().year) in str(date))]
+    
+    # Removing old values if they exist so that only the 4 most recent values are included in the calculation.
+    if 4 < len(current_years_filings):
+        # Calculating the last index of the relevant data
+        lower_bound = 4 - len(current_years_filings)
+        current_years_filings = current_years_filings[0:lower_bound]
+    print(current_years_filings)
     # Getting the earnings of the list, that was cleaned above and summing up the earnings.
     eps = fundamentals[current_years_filings].loc[(4200, "Basic Earnings Per Share")].to_list()
     summed_eps = sum(eps)
@@ -55,8 +55,8 @@ def ep_ratio(stock_class: Stock, concurrency_manager):
     # Calculate the actual calculation.
     try:
         stock_ep_ratio = summed_eps / price
-        concurrency_manager["E/P Ratio"] = {"E/P Ratio" : round(stock_ep_ratio, 2)}
-        return round(stock_ep_ratio, 2)
+        concurrency_manager["E/P Ratio"] = {"E/P Ratio" : round(stock_ep_ratio, 4)}
+        return round(stock_ep_ratio, 4)
     except ZeroDivisionError:
         concurrency_manager["E/P Ratio"] = {"E/P Ratio" : pd.NA}
         return None
