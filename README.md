@@ -1,17 +1,16 @@
 # portfolio-stack
 
-Please first have a look at the [Disclaimer](#Disclaimer). Thank you! Now that you are familiar how this application can be used, feel free to continue.  
+Please first have a look at the [Disclaimer](#Disclaimer).
+
+Now that you are familiar how this application can be used, feel free to continue.  
 
 The Portfolio-Stack was developed to support portfolio construction (of course without putting any capital at risk and only for educational purposes), powered by Polygon API. I intend to further maintain this Repo to expand its capabilities. 
 
 # Features
 
-Several different Tickers can be requested and their returns and several different KPI can be compared. The period used for the calculation of the ratios is 1 year.
-
-Here is a short video to get you excited:
+Several different Tickers can be requested and their returns and several different KPIs can be compared. The period used for the calculation of the indicators is 1 year.
 
 ![4eaf7a6c-793d-4e9e-b6b6-24799e0536bd](https://github.com/joshuapjs/portfolio-stack/assets/82243579/9eaaec17-694a-43d3-ba73-afa9bbf5ac76)
-
 
 # Prerequisites
 
