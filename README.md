@@ -10,7 +10,7 @@ The Portfolio-Stack was developed to support portfolio construction (of course w
 
 Several different Tickers can be requested and their returns and several different KPIs can be compared. The period used for the calculation of the indicators is 1 year.
 
-![4eaf7a6c-793d-4e9e-b6b6-24799e0536bd](https://github.com/joshuapjs/equity-explorer/assets/82243579/9eaaec17-694a-43d3-ba73-afa9bbf5ac76)
+![ezgif-5-b3d98cf8e7](https://github.com/joshuapjs/equity-explorer/assets/82243579/7f788553-c987-4eee-8103-674acc87db32)
 
 # Prerequisites
 
