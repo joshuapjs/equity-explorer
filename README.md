@@ -1,4 +1,4 @@
-# portfolio-stack
+# equity-exlorer
 
 Please first have a look at the [Disclaimer](#Disclaimer).
 
@@ -10,7 +10,7 @@ The Portfolio-Stack was developed to support portfolio construction (of course w
 
 Several different Tickers can be requested and their returns and several different KPIs can be compared. The period used for the calculation of the indicators is 1 year.
 
-![4eaf7a6c-793d-4e9e-b6b6-24799e0536bd](https://github.com/joshuapjs/portfolio-stack/assets/82243579/9eaaec17-694a-43d3-ba73-afa9bbf5ac76)
+![4eaf7a6c-793d-4e9e-b6b6-24799e0536bd](https://github.com/joshuapjs/equity-explorer/assets/82243579/9eaaec17-694a-43d3-ba73-afa9bbf5ac76)
 
 # Prerequisites
 
@@ -39,7 +39,7 @@ Many thanks to everyone in the open-source community for their hard work and con
 
 - If everything is setup, the application be executed through the command line or terminal through:
 ```shell
-python -m portfolio-stack
+python -m equity-explorer
 ```
 - The Web App will open in your browser. The Session can be closed (this is for the newbies) with `ctrl + c` through the terminal.
 - You can enter Stock Tickers, separated by everything except capital letters and confirm by clicking on Submit.
