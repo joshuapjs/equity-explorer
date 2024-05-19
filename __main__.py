@@ -19,7 +19,7 @@ key = os.getenv("API_Polygon")
 app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])  # Instantiating the basis for the Dash App
 app.layout = html.Div([
     # header / name of the Application
-    html.Div(children="Portfolio Stack",
+    html.Div(children="Equity Explorer",
              style={"fontSize": "24px",
                     'color': 'white',
                     'fontFamily': 'Arial',
