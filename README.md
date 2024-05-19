@@ -1,4 +1,4 @@
-# equity-exlorer
+# equity-explorer
 
 Please first have a look at the [Disclaimer](#Disclaimer).
 
