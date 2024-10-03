@@ -7,7 +7,7 @@ from .price_data import Asset
 
 def get_capm(api_key, asset_ticker, freq=1):
     """
-    Function to fetch the alpha and beta value for give ticker
+    Function to fetch the alpha and beta value for give ticker.
     :param api_key: key for the Polygon.io API
     :param asset_ticker: ticker as a string
     :param freq: frequency over how many periods the returns should be calculated
@@ -38,7 +38,7 @@ def get_capm(api_key, asset_ticker, freq=1):
 
 def get_realized_volatility(api_key, asset_ticker, freq=1):
     """
-    calculate the realized volatility for the last 365 days including weekends and holidays for the given ticker
+    Calculate the realized volatility for the last 365 days including weekends and holidays for the given ticker.
     :param api_key: key for the Polygon.io API
     :param asset_ticker: ticker as a string
     :param freq: frequency over how many periods the returns should be calculated
@@ -54,7 +54,7 @@ def get_realized_volatility(api_key, asset_ticker, freq=1):
 
 def get_sharpe_ratio(api_key, assert_ticker, risk_free_rate=0.0538):
     """
-    calculate the current sharpe ratio of the given ticker
+    Calculate the current sharpe ratio of the given ticker
     :param risk_free_rate: 53 Weeks T-Bill rate as of 2023-09-05
     :param api_key: key for the Polygon.io API
     :param assert_ticker: ticker as a string

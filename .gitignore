@@ -1,2 +1,4 @@
 # I use iPython for testing purposes sometimes. The cache is therefore excluded.
 __pycache__/
+.DS_Store
+.idea/

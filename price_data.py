@@ -13,7 +13,6 @@ class Asset:
     def __init__(self, api_key, asset_ticker, asset_class,
                  start=(datetime.today() - timedelta(days=365)).strftime('%Y-%m-%d'),
                  end=datetime.today().strftime('%Y-%m-%d'), frequency="day", limit=1000):
-
         self.api_key = api_key
         self.asset_ticker = asset_ticker
         self.asset_class = asset_class
@@ -22,6 +21,7 @@ class Asset:
         self.frequency = frequency
         self.limit = limit
 
+    # TODO Idea: It would be prettier if this function would be assigned to the Stock class directly.
     def get_fundamentals(self, show=False, aggregate=True, statement_type="balance_sheet"):
         fundamentals = f.get_fundamentals(self.api_key,
                                           asset_ticker=self.asset_ticker,
@@ -31,7 +31,8 @@ class Asset:
 
         return fundamentals
 
-    def get_stock_infos(self, show=False):
+    # TODO Idea: It would be prettier if this function would be assigned to the Stock class directly.
+    def get_infos(self, show=False):
         infos = f.get_ticker_info(api_key=self.api_key,
                                   asset_ticker=self.asset_ticker,
                                   show=show)

@@ -11,15 +11,9 @@ The values are stored as pickle elements which is in general a dependency of thi
 A subscription for the Polygon.io Stocks-Starter is necessary to request the data.
 """
 
-import subprocess
-import atexit
 import json
-import time
-import os
-import pickle
 import pandas as pd
 import requests
-import redis
 
 
 def handle_response(response, asset_ticker, client_error_message, show=False):
@@ -44,7 +38,7 @@ def handle_response(response, asset_ticker, client_error_message, show=False):
     return data
 
 
-# TODO Make the API Calls asynchronous.
+# TODO Idea: Make the API Calls asynchronous.
 def get_fundamentals(api_key, asset_ticker="AAPL", show=False, aggregate=False, statement_type="balance_sheet"):
     """
     This function retrieves the fundamentals of a given asset.
@@ -80,7 +74,7 @@ def get_fundamentals(api_key, asset_ticker="AAPL", show=False, aggregate=False, 
             statement_df = pd.DataFrame(raw_statement)
             statement_df = statement_df.transpose()
             # statement_df["order"] = statement_df["order"].astype(int)
-            # TODO This might not be necessary in my test the column was already filled with int.
+            # TODO Note: This might not be necessary in my test the column was already filled with int.
             #      However, if it creates problems the respective line can be uncommented.
             statement_df = statement_df.set_index(["order", "label"])
             statement_df.sort_index(inplace=True)
@@ -144,7 +138,7 @@ def get_ticker_info(api_key, asset_ticker="AAPL", show=False):
     
     # Handle the response give by Polygon.io.
     info = handle_response(response, asset_ticker, "No information found", show=show)
-    info_df = pd.DataFrame(info)["results"]  # First declaring and then filtering the dataframe is the correct order here.
+    info_df = pd.DataFrame(info)["results"]  # First declaring and then filtering the dataframe is the correct order.
 
     return info_df
 

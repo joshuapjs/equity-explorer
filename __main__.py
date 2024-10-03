@@ -5,7 +5,6 @@ from threading import Timer
 import webbrowser
 from dash import Dash, dcc, html, dash_table, callback, Output, Input, State
 import dash_bootstrap_components as dbc
-import pandas as pd
 import plotly
 from . import visualize as viz
 from . import fundamental_ratios as fr
@@ -13,12 +12,14 @@ from . import quant_ratios as qr
 from .price_data import Asset
 
 
-# NOTE: Change this Variable if your Key is not stored in an Environment varible.
+# NOTE: Change this if your key is not stored in an Environment Variable.
 key = os.getenv("API_Polygon")
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])  # Instantiating the basis for the Dash App
+
+# Setting up the predefined elements offered by Dash
 app.layout = html.Div([
-    # header / name of the Application
+    # Header of the Application
     html.Div(children="Equity Explorer",
              style={"fontSize": "24px",
                     'color': 'white',
@@ -37,7 +38,7 @@ app.layout = html.Div([
                                                                      'marginLeft': '1.0em'
                                                                      }),
     html.Div(style={'height': '20px'}),
-    # Container containing the graphs align in a row
+    # Container to align the two graphs in a row
     dbc.Container([dbc.Row([
         dbc.Col(dcc.Graph(figure={}, id="price_line")),
         dbc.Col(dcc.Graph(figure={}, id="price_hist")),
@@ -118,47 +119,49 @@ app.layout = html.Div([
         html.Div(style={'height': '20px'}),
     ])], fluid=True)])
 
-def add_table_line(ticker_symbol: str):
-    """
-    function to add a line to the DataTable for each ticker.
 
-    :param ticker_symbol: This is a function to cuncurrently calculate the values
-    for a line for each stock given as a list through the ticker_symbol.
-    :return: Returns a dictionary that will be appended to a list to be recognized as a line
-    of data for a Dash-data-table.
+def add_table_row(ticker_symbol: str):
+    """
+    Calculates parameters of a row for the DataTable.
+    :param ticker_symbol: This calculates the parameters for each stock given ticker_symbol concurrently.
+    :return: Returns a dictionary that will be appended to a list to be recognized as a row of a DataTable.
     """
     # Feeding the POD with its values.
     stock = fr.Stock(key, ticker_symbol)
     
-    # Setting up the object to dirstribute the data.
+    # Setting up the object to distribute the data.
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
-    # For each value of a column there is a task created.
-    # NOTE: The measures can be modified but their function have to return a dictionary (see output of function in fr).
-    #       It is also necessary to adjust the placeholder data at the top so that all datapoints are allocated correctly.
-    #       Each new measures have to work with multiprocessing.Manager().manager.dict().
+
+    # NOTE: For each parameter displayed in a column a task is created. The measures can be modified but their function
+    # have to return a dictionary (see output of function in fr). It is also necessary to adjust the placeholder data at
+    # the top so that all datapoints are allocated correctly. Each new measures have to work with:
+    # multiprocessing.Manager().manager.dict().
     tasks = [fr.ep_ratio, fr.pb_ratio, fr.current_ratio,
              fr.ro_equity, fr.ro_assets, fr.div_growth]
 
     # Each Process is added to jobs to call join() on them and awaiting their result.
     jobs = []
     for task in tasks:
-        p = multiprocessing.Process(target=task, args=(stock, return_dict))
-        jobs.append(p)
-        p.start()
+        process_for_task = multiprocessing.Process(target=task, args=(stock, return_dict))
+        jobs.append(process_for_task)
+        process_for_task.start()
     
-    # calling join() on each process to wait until they are finished.
-    for proc in jobs:
-        proc.join()
+    # Calling join() on each process to wait until they are finished.
+    for process in jobs:
+        process.join()
     
     # Preparation of the data for the output.
     calculated_ratios = return_dict.values()
-    # Ticker-element should remain first in line but requires not its own process.
-    line_of_data = {"Ticker": ticker_symbol}
-    for item in calculated_ratios:
-        line_of_data.update(item)
 
-    return line_of_data
+    row_of_data = {}
+    for item in calculated_ratios:
+        row_of_data.update(item)
+
+    # We must not forget the Ticker_symbol of the row!
+    row_of_data.update({"Ticker": ticker_symbol})
+
+    return row_of_data
 
 
 @callback(Output("ratio_table", "data"),
@@ -171,7 +174,7 @@ def update_ratio_table(n_clicks, ticker):
     
     # Creating multiple functions or only one.
     for current_ticker in clean_ticker_list:
-        data.append(add_table_line(current_ticker))
+        data.append(add_table_row(current_ticker))
 
     return data
 
@@ -182,17 +185,17 @@ def update_ratio_table(n_clicks, ticker):
 def update_quant_table(n_clicks, ticker):
     data = []
 
-    # function to add a line to the DataTable for each ticker
-    def add_line(ticker_symbol):
+    # Function to add a row to the DataTable for each ticker
+    def add_row(ticker_symbol):
         capm_values = qr.get_capm(key, ticker_symbol)
 
-        line_of_data = {"Ticker": ticker_symbol,
+        row = {"Ticker": ticker_symbol,
                         "Alpha": round(capm_values[0], 3),
                         "Beta": round(capm_values[1], 3),
                         "Volatility": round(qr.get_realized_volatility(key, ticker_symbol), 3),
                         "Sharpe ratio": round(qr.get_sharpe_ratio(key, ticker_symbol), 3)}
-        
-        return line_of_data
+
+        return row
     
     # Find all tickers in the input string.
     ticker_list = re.findall(r'[A-Z0-9]*\.?[A-Z0-9]*',ticker)
@@ -200,7 +203,7 @@ def update_quant_table(n_clicks, ticker):
     
     # Call the function for each element given in the input string.
     for current_ticker in clean_ticker_list:
-        data.append(add_line(current_ticker))
+        data.append(add_row(current_ticker))
 
     return data
 
@@ -210,7 +213,7 @@ def update_quant_table(n_clicks, ticker):
           State("ticker_as_text", "value"))
 def update_graph(n_clicks, ticker):
 
-    # function to add a line to the Graph for each ticker
+    # Function to add a line to the Graph for each ticker
     def add_graph_line(ticker_symbol, data, figure):
         figure.add_trace(plotly.graph_objects.Scatter(x=data.index,
                                                       y=data["c"],
@@ -280,6 +283,6 @@ def update_hist(n_clicks, ticker):
 
 if __name__ == "__main__":
     def open_browser(debug=True):
-      webbrowser.open_new('http://127.0.0.1:8050')
+        webbrowser.open_new('http://127.0.0.1:8050')
     Timer(1, open_browser).start()
     app.run()
